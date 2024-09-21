@@ -16,7 +16,7 @@ export interface Tab {
 
 export const tabs: Tab[] = [
   {
-    path: "/dashboard",
+    path: "/",
     icon: faTachometerAlt,
     label: "Dashboard",
   },
