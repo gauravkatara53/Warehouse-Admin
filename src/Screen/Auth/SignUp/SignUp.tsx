@@ -30,7 +30,7 @@ const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
     </div>
   );
 };
-export default function SingIn() {
+export default function SingUp() {
   const [checked, setChecked] = useState<boolean>(false);
 
   const handleChange = (nextChecked: boolean) => {
@@ -77,6 +77,19 @@ export default function SingIn() {
                   {/* Email Input */}
                   <div className="mb-4">
                     <label className="block text-gray-700 mb-2" htmlFor="email">
+                      Username
+                    </label>
+                    <input
+                      type="Username"
+                      id="Username"
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter your username"
+                    />
+                  </div>
+
+                  {/* Email Input */}
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2" htmlFor="email">
                       Email
                     </label>
                     <input
@@ -117,10 +130,10 @@ export default function SingIn() {
                   <p className="text-center text-gray-600">
                     Don't have an account?{" "}
                     <Link
-                      to="/signup"
+                      to="/signin"
                       className="text-[#4FD1C5] hover:underline"
                     >
-                      Sign Up
+                      Sign In
                     </Link>
                   </p>
                 </div>

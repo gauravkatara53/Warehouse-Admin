@@ -14,7 +14,7 @@ export default function Profile() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 px-4 pt-6 mt-9 lg:mt-0 sm:mt-6">
+      <div className="flex-1 p-6 -mt-5 lg:mt-0 sm:mt-6">
         {/* Background Image */}
         <div className="relative">
           <img

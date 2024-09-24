@@ -40,10 +40,10 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
+    <div className="flex">
       {/* Mobile Top Bar */}
       <div
-        className={`md:hidden flex justify-between items-center bg-gray-100 p-4 fixed top-0 left-0 right-0 z-50 ${
+        className={`md:hidden flex  justify-between items-center bg-gray-100 p-4 fixed top-0 left-0 right-0 z-50 ${
           isSidebarOpen ? "hidden" : "flex"
         }`}
       >
@@ -60,9 +60,10 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed z-40 top-0 left-0 w-full h-full bg-gray-100 transform transition-transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0 md:w-64 md:h-screen`}
+        className={`fixed top-0 left-0 h-full bg-gray-100 transform transition-transform ${
+          isSidebarOpen ? "translate-x-0 w-screen" : "-translate-x-full"
+        } md:translate-x-0 z-40`}
+        style={{ height: "100vh" }} // Ensures sidebar height matches viewport
       >
         {/* Close Button for Mobile */}
         {isSidebarOpen && (
@@ -122,7 +123,7 @@ export default function Sidebar() {
         </div>
 
         {/* Help Section */}
-        <div className="-mt-14 md:mt-4 lg:mt-4 relative flex justify-center items-center">
+        <div className="-mt-20 md:mt-4 lg:mt-4 relative flex justify-center items-center">
           <div className="p-4 max-w-sm w-full">
             <div
               className="rounded-lg bg-cover bg-center p-4 text-left"
@@ -148,6 +149,11 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Page Content */}
+      <div className="flex-grow ml-64 overflow-y-auto pt-16 md:pt-0">
+        {/* Your page content goes here */}
       </div>
     </div>
   );

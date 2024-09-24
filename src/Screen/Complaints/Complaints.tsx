@@ -13,7 +13,7 @@ export default function Complaints() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 px-4 pt-6 mt-9 lg:mt-0 sm:mt-6">
+      <div className="flex-1 p-6 -mt-5 lg:mt-0 sm:mt-6">
         {/* Top section with four CardWrapper1 components */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <CardWrapper1

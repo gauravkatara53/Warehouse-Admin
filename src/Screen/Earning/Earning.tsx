@@ -14,7 +14,7 @@ export default function Earning() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 mt-9 lg:mt-0 sm:mt-6">
+      <div className="flex-1 p-6 -mt-5 lg:mt-0 sm:mt-6">
         {/* Top section with four CardWrapper1 components */}
 
         {/* Bottom section split into two parts: left and right */}
