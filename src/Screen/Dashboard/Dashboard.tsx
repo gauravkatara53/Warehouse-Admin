@@ -16,31 +16,35 @@ export default function Dashboard() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 -mt-5 lg:mt-0 sm:mt-6">
+      <div className="flex-1 p-2 -mt-3 sm:p-4 lg:mt-0 sm:mt-6">
         {/* Top section with four CardWrapper1 components */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <CardWrapper1
             heading="Top Booking"
             mainNumber="150"
             sideNumber="+20%"
+            className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faWallet} />}
           />
           <CardWrapper1
             heading="Month's Booking"
             mainNumber="200"
             sideNumber="+35%"
+            className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faGlobe} />}
           />
           <CardWrapper1
             heading="No.of warehouses"
             mainNumber="1200"
             sideNumber="+50%"
+            className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faUser} />}
           />
           <CardWrapper1
             heading="Active warehouses"
             mainNumber="150"
             sideNumber="+20%"
+            className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faStar} />}
           />
         </div>

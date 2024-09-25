@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { bookings } from "./AllBooking";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,15 +8,20 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const AllBooking: React.FC = () => {
-  return (
-    <section className="px-3 lg:px-6  py-8">
-      {/* Search Bar */}
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // Filter the bookings based on the search term
+  const filteredBookings = bookings.filter((booking) =>
+    booking.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <section className="px-3 lg:px-6 py-8">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-medium sm:text-xl">Booking Information</h2>
-        <div className="flex items-center  space-x-2">
-          <span className="text-gray-500  flex items-center space-x-1">
+        <div className="flex items-center space-x-2">
+          <span className="text-gray-500 flex items-center space-x-1">
             <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-500" />
             <span className="lg:text-sm text-sm md:text-sm">
               23-30 July 2024
@@ -24,6 +29,8 @@ const AllBooking: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Search Bar */}
       <div className="mb-4">
         <div className="relative">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
@@ -33,13 +40,15 @@ const AllBooking: React.FC = () => {
             type="text"
             placeholder="Search Booking"
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4FD1C5] focus:border-transparent"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
           />
         </div>
       </div>
 
       {/* Booking Cards */}
       <div className="mt-4 space-y-4">
-        {bookings.map((booking, index) => (
+        {filteredBookings.map((booking, index) => (
           <div
             key={index}
             className="flex justify-between items-center bg-gray-100 p-4 rounded-md"

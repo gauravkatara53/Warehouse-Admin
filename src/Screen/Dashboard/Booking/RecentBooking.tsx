@@ -2,6 +2,7 @@ import React from "react";
 import { bookings } from "./bookingData";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 const RecentBooking: React.FC = () => {
   return (
@@ -9,12 +10,12 @@ const RecentBooking: React.FC = () => {
       {/* Header Section */}
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold sm:text-xl">Recent Transactions</h2>
-        <a
-          href="#"
+        <Link
+          to="/booking"
           className="text-[#4FD1C5] hover:underline text-sm sm:text-base"
         >
           View All
-        </a>
+        </Link>
       </div>
 
       {/* Booking Cards */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ListData } from "./ListData";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,10 +8,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const WarehouseInfo: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter the ListData based on the search term
+  const filteredData = ListData.filter((booking) =>
+    booking.warehouseNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <section className="px-3 lg:px-6 py-6">
-      {/* Search Bar */}
-
       {/* Header Section */}
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg lg:text-md font-medium sm:text-xl">
@@ -35,13 +40,15 @@ const WarehouseInfo: React.FC = () => {
             type="text"
             placeholder="Search Booking"
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4FD1C5] focus:border-transparent"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
           />
         </div>
       </div>
 
       {/* Booking Cards */}
       <div className="mt-4 space-y-4">
-        {ListData.map((booking, index) => (
+        {filteredData.map((booking, index) => (
           <div
             key={index}
             className="flex justify-between items-center bg-gray-100 p-4 rounded-md"

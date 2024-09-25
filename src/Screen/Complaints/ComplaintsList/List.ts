@@ -4,7 +4,7 @@ interface Complaint {
   description: string;
   imageSrc: string;
   attachments: number; // For storing the number of attachments
-  status: "verified" | "solved"; // Added status field
+  status: "Pending" | "solved"; // Added status field
 }
 
 export const ListData: Complaint[] = [
@@ -14,7 +14,7 @@ export const ListData: Complaint[] = [
     description: "The warehouse door is not functioning properly.",
     imageSrc: "Group 48096434.png",
     attachments: 2,
-    status: "verified", // Status added
+    status: "Pending", // Status added
   },
   {
     subject: "Power Outage",
@@ -22,7 +22,7 @@ export const ListData: Complaint[] = [
     description: "No electricity in the warehouse for the past two days.",
     imageSrc: "Group 48096434.png",
     attachments: 3,
-    status: "verified", // Status added
+    status: "Pending", // Status added
   },
   {
     subject: "Water Leakage",
@@ -46,7 +46,7 @@ export const ListData: Complaint[] = [
     description: "Several shelves have collapsed inside the warehouse.",
     imageSrc: "Group 48096434.png",
     attachments: 2,
-    status: "verified", // Status added
+    status: "Pending", // Status added
   },
   {
     subject: "Pest Infestation",
@@ -54,7 +54,7 @@ export const ListData: Complaint[] = [
     description: "There are signs of pest infestation in the warehouse.",
     imageSrc: "Group 48096434.png",
     attachments: 2,
-    status: "verified", // Status added
+    status: "Pending", // Status added
   },
   {
     subject: "Damaged Goods",

@@ -6,6 +6,7 @@ import {
   faTwitter,
   faInstagram,
 } from "@fortawesome/free-brands-svg-icons";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   return (
@@ -14,7 +15,7 @@ export default function Profile() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 -mt-5 lg:mt-0 sm:mt-6">
+      <div className="flex-1 p-2 -mt-3 sm:p-4 lg:mt-0 sm:mt-6">
         {/* Background Image */}
         <div className="relative">
           <img
@@ -49,15 +50,17 @@ export default function Profile() {
               </div>
 
               {/* Right Side - Log Out Button */}
-              <div className="mt-4 sm:mt-0">
-                <button className="border flex items-center bg-white text-black px-4 py-2 rounded-md hover:bg-[#9F8EF2] hover:text-white">
-                  <FontAwesomeIcon
-                    icon={faSignOutAlt}
-                    className="mr-2 text-black"
-                  />
-                  Log Out
-                </button>
-              </div>
+              <Link to="/signin">
+                <div className="mt-4 sm:mt-0">
+                  <button className="group border flex items-center bg-white text-black px-4 py-2 rounded-md hover:bg-[#9F8EF2] hover:text-white">
+                    <FontAwesomeIcon
+                      icon={faSignOutAlt}
+                      className="mr-2 text-black group-hover:text-white"
+                    />
+                    Log Out
+                  </button>
+                </div>
+              </Link>
             </section>
           </div>
         </div>

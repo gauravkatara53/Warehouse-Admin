@@ -1,5 +1,6 @@
 // TransactionSection.tsx
 import { transactionData } from "./transactionData";
+import { Link } from "react-router-dom";
 
 type Transaction = {
   id: number;
@@ -32,12 +33,12 @@ const TransactionSection = () => {
       {/* Header Section */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold sm:text-xl">Recent Transactions</h2>
-        <a
-          href="#"
+        <Link
+          to="/earning"
           className="text-[#4FD1C5] hover:underline text-sm sm:text-base"
         >
           View All
-        </a>
+        </Link>
       </div>
 
       {/* Render transactions grouped by date */}

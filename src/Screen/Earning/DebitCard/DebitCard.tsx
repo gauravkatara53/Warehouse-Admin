@@ -1,7 +1,7 @@
 export default function DBCard() {
   return (
     <>
-      <div className="w-90 sm:w-96 h-48 sm:h-56 m-auto bg-red-100 rounded-xl relative text-white shadow-md ">
+      <div className="w-90 sm:w-98 h-48 sm:h-56 m-auto bg-red-100 rounded-xl relative text-white shadow-md ">
         <img
           className="relative object-cover w-full h-full rounded-xl"
           src="https://i.imgur.com/kGkSg1v.png"

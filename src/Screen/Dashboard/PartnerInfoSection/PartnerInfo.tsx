@@ -1,6 +1,7 @@
 import React from "react";
 import CustomButton from "@/Components/Common/button"; // Import your custom button
 import { profileList } from "./listData"; // Import the list data
+import { Link } from "react-router-dom";
 
 const PartnerInfoSection: React.FC = () => {
   return (
@@ -8,15 +9,17 @@ const PartnerInfoSection: React.FC = () => {
       {/* Top heading section */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-1xl font-semibold">Partners Information</h2>
-        <a href="#" className="text-blue-500 hover:underline">
+        <Link to="/warehouses" className="text-[#4FD1C5] hover:underline">
           View All
-        </a>
+        </Link>
       </div>
 
       {/* KYC Button */}
-      <CustomButton className="text-sm -ml-1 -mt-2">
-        KYC to be verified
-      </CustomButton>
+      <Link to="/warehouses">
+        <CustomButton className="text-sm -ml-1 -mt-2">
+          KYC to be verified
+        </CustomButton>
+      </Link>
 
       {/* Profile List */}
       <ul className="mt-6 space-y-4">
