@@ -49,7 +49,7 @@ export default function SignIn() {
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
       {/* Main Content */}
-      <div className="flex-1 px-2 pt-6 lg:mt-0 sm:mt-6 mt-[20%]">
+      <div className="flex-1 px-2 pt-6 lg:mt-0 sm:mt-6 mt-[30px]">
         {/* Background Image */}
         <div className="relative">
           <img

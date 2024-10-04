@@ -53,7 +53,7 @@ export default function SignUp() {
       {/* Sidebar */}
 
       {/* Main Content */}
-      <div className=" flex-1 px-2 pt-6 mt-[20%] lg:mt-0 sm:mt-6">
+      <div className=" flex-1 px-2 pt-6 mt-[55px] lg:mt-0 sm:mt-6">
         {/* Background Image */}
         <div className="relative">
           <img
