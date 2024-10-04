@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Sidebar from "@/Components/Common/SideBar/Sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencilAlt, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +10,21 @@ import {
 import { Link } from "react-router-dom";
 
 export default function Profile() {
+  const [image, setImage] = useState("user5.png"); // State to store the uploaded image
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Use optional chaining to safely access files
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          setImage(reader.result as string); // Assert that result is a string
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
       {/* Sidebar */}
@@ -30,17 +46,35 @@ export default function Profile() {
               {/* Left Side - Profile Image with Pencil Icon */}
               <div className="relative flex-shrink-0 mb-4 sm:mb-0">
                 <img
-                  src="user5.png"
+                  src={image} // Use the image state for the profile image
                   alt="Profile"
                   className="w-20 h-20 rounded-lg object-cover"
                 />
                 {/* Pencil Icon at bottom right of the image */}
-                <span className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md cursor-pointer">
+                <span
+                  className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md cursor-pointer"
+                  onClick={() => {
+                    const fileInput = document.getElementById(
+                      "fileInput"
+                    ) as HTMLInputElement | null; // Type assertion
+                    if (fileInput) {
+                      fileInput.click(); // Trigger file input if it exists
+                    }
+                  }}
+                >
                   <FontAwesomeIcon
                     icon={faPencilAlt}
                     className="text-gray-500"
                   />
                 </span>
+                {/* Hidden file input for image upload */}
+                <input
+                  id="fileInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden" // Hide the file input
+                />
               </div>
 
               {/* Middle Section - Heading and Subheading */}

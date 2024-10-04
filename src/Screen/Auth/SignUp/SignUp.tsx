@@ -1,5 +1,5 @@
 import Switch from "react-switch";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 interface RememberMeSwitchProps {
@@ -30,24 +30,36 @@ const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
     </div>
   );
 };
-export default function SingUp() {
+
+export default function SignUp() {
   const [checked, setChecked] = useState<boolean>(false);
 
   const handleChange = (nextChecked: boolean) => {
     setChecked(nextChecked);
   };
+
+  useEffect(() => {
+    // Restrict scroll when component mounts
+    document.body.style.overflow = "hidden";
+
+    // Cleanup function to restore scroll
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
       {/* Sidebar */}
 
       {/* Main Content */}
-      <div className=" flex-1 px-4 pt-6 mt-9 lg:mt-0 sm:mt-6">
+      <div className=" flex-1 px-2 pt-6 mt-[20%] lg:mt-0 sm:mt-6">
         {/* Background Image */}
         <div className="relative">
           <img
             src="Image-s.png"
             alt=""
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover hidden sm:block"
           />
 
           {/* Section Overlay */}
@@ -74,13 +86,16 @@ export default function SingUp() {
                     Enter your email and password
                   </p>
 
-                  {/* Email Input */}
+                  {/* Username Input */}
                   <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="email">
+                    <label
+                      className="block text-gray-700 mb-2"
+                      htmlFor="Username"
+                    >
                       Username
                     </label>
                     <input
-                      type="Username"
+                      type="text"
                       id="Username"
                       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter your username"

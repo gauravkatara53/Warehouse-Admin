@@ -35,6 +35,7 @@ const TransactionSection = () => {
         <h2 className="text-lg font-bold sm:text-xl">Recent Transactions</h2>
         <Link
           to="/earning"
+          href="#"
           className="text-[#4FD1C5] hover:underline text-sm sm:text-base"
         >
           View All

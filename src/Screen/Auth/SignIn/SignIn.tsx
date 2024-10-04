@@ -1,5 +1,5 @@
 import Switch from "react-switch";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 interface RememberMeSwitchProps {
@@ -16,11 +16,11 @@ const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
       <Switch
         onChange={onChange}
         checked={checked}
-        offColor="#BDC3C7" // Color when unchecked
-        onColor="#4FD1C5" // Color when checked
-        handleDiameter={20} // Adjust handle size if needed
-        uncheckedIcon={false} // Hide unchecked icon (cross)
-        checkedIcon={false} // Hide checked icon (tick)
+        offColor="#BDC3C7"
+        onColor="#4FD1C5"
+        handleDiameter={20}
+        uncheckedIcon={false}
+        checkedIcon={false}
         className="react-switch"
         id="remember-me-switch"
       />
@@ -30,24 +30,32 @@ const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
     </div>
   );
 };
-export default function SingIn() {
+
+export default function SignIn() {
   const [checked, setChecked] = useState<boolean>(false);
 
   const handleChange = (nextChecked: boolean) => {
     setChecked(nextChecked);
   };
+
+  // Prevent scrolling when component is mounted
+  useEffect(() => {
+    document.body.style.overflow = "hidden"; // Disable scrolling
+    return () => {
+      document.body.style.overflow = "auto"; // Re-enable scrolling on unmount
+    };
+  }, []);
+
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
-      {/* Sidebar */}
-
       {/* Main Content */}
-      <div className=" flex-1 px-4 pt-6 mt-9 lg:mt-0 sm:mt-6">
+      <div className="flex-1 px-2 pt-6 lg:mt-0 sm:mt-6 mt-[20%]">
         {/* Background Image */}
         <div className="relative">
           <img
             src="Image-s.png"
             alt=""
-            className="w-full h-auto object-cover"
+            className="w-full h-auto object-cover hidden sm:block"
           />
 
           {/* Section Overlay */}
@@ -120,7 +128,7 @@ export default function SingIn() {
                       to="/signup"
                       className="text-[#4FD1C5] hover:underline"
                     >
-                      Sign Up
+                      SignUp
                     </Link>
                   </p>
                 </div>

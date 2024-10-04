@@ -82,9 +82,9 @@ const WarehouseInfo: React.FC = () => {
             </div>
 
             {/* Arrow Icon */}
-            <div className="flex items-center border border-gray-400 p-2 rounded-full">
+            {/* <div className="flex items-center border border-gray-400 p-2 rounded-full">
               <FontAwesomeIcon icon={faArrowRight} className="text-gray-600" />
-            </div>
+            </div> */}
           </div>
         ))}
       </div>
