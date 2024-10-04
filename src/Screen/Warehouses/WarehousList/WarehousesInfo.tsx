@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { ListData } from "./ListData";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowRight,
-  faCalendarAlt,
-  faSearch,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 const WarehouseInfo: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
