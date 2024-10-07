@@ -1,12 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faUser, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { faWallet } from "@fortawesome/free-solid-svg-icons"; // Wallet icon
-import CardWrapper1 from "@/Components/Common/WHWrapper1";
 import Sidebar from "@/Components/Common/SideBar/Sidebar";
-import ComplaintsList from "./ComplaintsList/ComplaintsList";
-// import Coupons from "./Coupons/Coupons";
+import { faStar, faUser, faGlobe } from "@fortawesome/free-solid-svg-icons";
+import CardWrapper1 from "@/Components/Common/WHWrapper1";
+import Applicants from "./Applicants/Applicants";
 
-export default function Complaints() {
+export default function Admin() {
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden ">
       {/* Sidebar */}
@@ -52,15 +51,13 @@ export default function Complaints() {
           <div className="flex flex-col w-full lg:w-[65%] space-y-6 flex-shrink-0">
             {/* CardWrapper2 components */}
             <div className="bg-white min-h-[200px] rounded-lg">
-              <ComplaintsList />
+              <Applicants></Applicants>
             </div>
           </div>
 
           {/* Right part */}
           <div className="flex-grow ml-1 w-full lg:w-[35%] space-y-6">
-            {/* <div className="p-2 bg-white min-h-[200px] rounded-lg">
-              <Coupons />
-            </div> */}
+            {/* <div className="p-2 bg-white min-h-[200px] rounded-lg"></div> */}
           </div>
         </div>
       </div>

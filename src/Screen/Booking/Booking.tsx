@@ -4,7 +4,7 @@ import { faWallet } from "@fortawesome/free-solid-svg-icons"; // Wallet icon
 import CardWrapper1 from "@/Components/Common/WHWrapper1";
 import Sidebar from "@/Components/Common/SideBar/Sidebar";
 import AllBooking from "./BookingData/BookingList";
-import InvoiceList from "./Invoice/InvoiceList";
+// import InvoiceList from "./Invoice/InvoiceList";
 
 export default function Booking() {
   return (
@@ -49,7 +49,7 @@ export default function Booking() {
         {/* Bottom section split into two parts: left and right */}
         <div className="flex flex-wrap lg:flex-nowrap gap-6">
           {/* Left part */}
-          <div className="flex flex-col w-full lg:w-[55%] space-y-6 flex-shrink-0">
+          <div className="flex flex-col w-full lg:w-[65%] space-y-6 flex-shrink-0">
             {/* CardWrapper2 components */}
             <div className="bg-white min-h-[200px] rounded-lg">
               <AllBooking />
@@ -57,11 +57,11 @@ export default function Booking() {
           </div>
 
           {/* Right part */}
-          <div className="flex-grow ml-1 w-full lg:w-[45%] space-y-6">
+          {/* <div className="flex-grow ml-1 w-full lg:w-[35%] space-y-6">
             <div className="p-2 bg-white min-h-[200px] rounded-lg">
               <InvoiceList></InvoiceList>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -5,7 +5,8 @@ import {
   faDollarSign, // Replace with appropriate icon
   faCalendarCheck,
   faBuilding, // Replace with appropriate icon
-  faExclamationCircle, // Replace with appropriate icon
+  faExclamationCircle,
+  faKey, // Replace with appropriate icon
 } from "@fortawesome/free-solid-svg-icons";
 
 export interface Tab {
@@ -44,5 +45,10 @@ export const tabs: Tab[] = [
     path: "/profile",
     icon: faUser,
     label: "Profile",
+  },
+  {
+    path: "/approve-admins",
+    icon: faKey,
+    label: "Approve Admins",
   },
 ];

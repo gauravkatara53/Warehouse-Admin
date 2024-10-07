@@ -1,162 +1,25 @@
-import Switch from "react-switch";
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+// SignUp.js
+import { useState, useEffect } from "react";
+import SignUpMobile from "./SignUpMobile"; // Import your mobile sign-up component
+import SignUpDesktop from "./SignUpDesktop"; // Import your desktop sign-up component
 
-interface RememberMeSwitchProps {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
+const SignUp = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Adjust the width according to your needs
 
-const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
-  checked,
-  onChange,
-}) => {
-  return (
-    <div className="flex items-center mb-6">
-      <Switch
-        onChange={onChange}
-        checked={checked}
-        offColor="#BDC3C7" // Color when unchecked
-        onColor="#4FD1C5" // Color when checked
-        handleDiameter={20} // Adjust handle size if needed
-        uncheckedIcon={false} // Hide unchecked icon (cross)
-        checkedIcon={false} // Hide checked icon (tick)
-        className="react-switch"
-        id="remember-me-switch"
-      />
-      <label htmlFor="remember-me-switch" className="ml-3 text-gray-700">
-        Remember me
-      </label>
-    </div>
-  );
-};
-
-export default function SignUp() {
-  const [checked, setChecked] = useState<boolean>(false);
-
-  const handleChange = (nextChecked: boolean) => {
-    setChecked(nextChecked);
+  const handleResize = () => {
+    setIsMobile(window.innerWidth <= 768);
   };
 
   useEffect(() => {
-    // Restrict scroll when component mounts
-    document.body.style.overflow = "hidden";
+    window.addEventListener("resize", handleResize);
 
-    // Cleanup function to restore scroll
+    // Cleanup listener on unmount
     return () => {
-      document.body.style.overflow = "auto";
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  return (
-    <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
-      {/* Sidebar */}
+  return <>{isMobile ? <SignUpMobile /> : <SignUpDesktop />}</>;
+};
 
-      {/* Main Content */}
-      <div className=" flex-1 px-2 pt-6 mt-[55px] lg:mt-0 sm:mt-6">
-        {/* Background Image */}
-        <div className="relative">
-          <img
-            src="Image-s.png"
-            alt=""
-            className="w-full h-auto object-cover hidden sm:block"
-          />
-
-          {/* Section Overlay */}
-          <div className="relative top-1/10 -mt-10 w-full lg:w-full">
-            <div className="relative w-full h-screen bg-cover bg-center">
-              <div className="flex justify-center items-center h-full">
-                <div
-                  className="relative bg-white p-8 rounded-3xl shadow-lg w-full max-w-md z-10"
-                  style={{ marginTop: "-40%" }}
-                >
-                  {/* Logo */}
-                  <div className="absolute top-4 left-4">
-                    <img src="logo1.png" alt="Logo" className="h-12" />
-                  </div>
-
-                  {/* Welcome Heading */}
-                  <h2
-                    className="text-4xl font-bold mb-2 mt-16 text-center"
-                    style={{ color: "#4FD1C5" }}
-                  >
-                    Welcome
-                  </h2>
-                  <p className="text-center mb-4 text-gray-400">
-                    Enter your email and password
-                  </p>
-
-                  {/* Username Input */}
-                  <div className="mb-4">
-                    <label
-                      className="block text-gray-700 mb-2"
-                      htmlFor="Username"
-                    >
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="Username"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your username"
-                    />
-                  </div>
-
-                  {/* Email Input */}
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="email">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  {/* Password Input */}
-                  <div className="mb-6">
-                    <label
-                      className="block text-gray-700 mb-2"
-                      htmlFor="password"
-                    >
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      id="password"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your password"
-                    />
-                  </div>
-
-                  {/* Remember Me Switch */}
-                  <RememberMeSwitch checked={checked} onChange={handleChange} />
-
-                  {/* Sign In Button */}
-                  <div className="mb-4">
-                    <button className="w-full bg-[#4FD1C5] text-white py-2 px-4 rounded-md hover:bg-[#3acabb] transition">
-                      Sign In
-                    </button>
-                  </div>
-
-                  {/* Sign Up Link */}
-                  <p className="text-center text-gray-600">
-                    Don't have an account?{" "}
-                    <Link
-                      to="/signin"
-                      className="text-[#4FD1C5] hover:underline"
-                    >
-                      Sign In
-                    </Link>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default SignUp;

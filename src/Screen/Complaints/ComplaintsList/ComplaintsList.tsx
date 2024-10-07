@@ -98,13 +98,13 @@ const ComplaintsList: React.FC = () => {
             {activeTab === "verified" && (
               <div className="flex lg:flex-col items-end space-y-2 mt-2 sm:mt-0 sm:flex-row sm:space-x-2">
                 <button
-                  className="bg-white text-xs text-gray-800 px-4 py-2 w-30 sm:w-24 mx-2 sm:mx-0 rounded hover:text-white hover:bg-[#9F8EF2]"
+                  className="bg-white  text-xs border text-gray-800 px-4 py-2 w-30 sm:w-28 mx-2 sm:mx-0 rounded hover:text-white hover:bg-[#9F8EF2]"
                   onClick={() => markAsRead(index)}
                 >
                   Mark as Read
                 </button>
                 <button
-                  className="bg-white text-xs text-gray-800 px-4 py-2 w-24 rounded hover:text-white hover:bg-[#9F8EF2]"
+                  className="bg-white text-xs border sm:w-28 text-gray-800 px-4 py-2 w-24 rounded hover:text-white hover:bg-[#9F8EF2]"
                   onClick={() => openReplyModal(complaint)}
                 >
                   Reply

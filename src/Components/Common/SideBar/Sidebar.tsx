@@ -85,7 +85,7 @@ export default function Sidebar() {
             {tabs.map((tab) => (
               <li
                 key={tab.path}
-                className={`flex items-center mr-4 p-2 mb-4 rounded-xl cursor-pointer group transition-transform duration-300 hover:scale-105 ${
+                className={`flex items-center mr-4 p-2 mb-3 rounded-xl cursor-pointer group transition-transform duration-300 hover:scale-105 ${
                   activeTab === tab.path ? "bg-white" : "hover:bg-white"
                 }`}
                 onClick={() => handleTabClick(tab.path)}
