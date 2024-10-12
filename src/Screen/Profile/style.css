@@ -1,0 +1,66 @@
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px); /* Increase bounce height */
+  }
+}
+
+.dot-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Take up full height to center content vertically */
+  flex-direction: column;
+}
+
+.loading-text {
+  font-size: 24px; /* Increase font size */
+  margin-bottom: 20px; /* Add space between text and dots */
+  text-align: center;
+}
+
+.dot-1,
+.dot-2,
+.dot-3 {
+  display: inline-block;
+  width: 20px; /* Increase dot size */
+  height: 20px; /* Increase dot size */
+  background-color: #333;
+  border-radius: 50%;
+  margin: 0 5px; /* Add space between dots */
+}
+
+.dot-1 {
+  animation: bounce 1s infinite;
+}
+
+.dot-2 {
+  animation: bounce 1s infinite 0.2s; /* Delay animation */
+}
+
+.dot-3 {
+  animation: bounce 1s infinite 0.4s; /* Delay animation */
+}
+
+/* For mobile screens */
+@media (max-width: 768px) {
+  .dot-container {
+    height: 80vh; /* Adjust the height for better centering on smaller screens */
+  }
+
+  .loading-text {
+    font-size: 18px; /* Reduce font size for mobile */
+    margin-bottom: 15px; /* Adjust spacing between text and dots */
+  }
+
+  .dot-1,
+  .dot-2,
+  .dot-3 {
+    width: 15px; /* Reduce dot size for mobile */
+    height: 15px; /* Reduce dot size for mobile */
+    margin: 0 4px; /* Reduce space between dots */
+  }
+}

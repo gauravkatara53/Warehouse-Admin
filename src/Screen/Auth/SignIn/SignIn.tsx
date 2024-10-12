@@ -1,6 +1,7 @@
-import Switch from "react-switch";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import Switch from "react-switch";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios"; // Axios for API call
 
 interface RememberMeSwitchProps {
   checked: boolean;
@@ -32,7 +33,11 @@ const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
 };
 
 export default function SignIn() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [checked, setChecked] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleChange = (nextChecked: boolean) => {
     setChecked(nextChecked);
@@ -45,6 +50,36 @@ export default function SignIn() {
       document.body.style.overflow = "auto"; // Re-enable scrolling on unmount
     };
   }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      const response = await axios.post(
+        "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/login",
+        {
+          email: email,
+          password: password,
+        }
+      );
+
+      // Handle successful response
+      if (response.data && response.data.token) {
+        // Store token in local storage
+        localStorage.setItem("token", response.data.token);
+        navigate("/"); // Redirect to dashboard or home
+      }
+    } catch (err: any) {
+      // Handle error response
+      setError(err.response?.data?.message || "Login failed");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear the token from local storage
+    navigate("/login"); // Redirect to login page
+  };
 
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
@@ -82,44 +117,65 @@ export default function SignIn() {
                     Enter your email and password
                   </p>
 
-                  {/* Email Input */}
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="email">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your email"
+                  {/* Error Message */}
+                  {error && <p className="text-center text-red-500">{error}</p>}
+
+                  {/* Form */}
+                  <form onSubmit={handleSubmit}>
+                    {/* Email Input */}
+                    <div className="mb-4">
+                      <label
+                        className="block text-gray-700 mb-2"
+                        htmlFor="email"
+                      >
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="mb-6">
+                      <label
+                        className="block text-gray-700 mb-2"
+                        htmlFor="password"
+                      >
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your password"
+                        required
+                      />
+                    </div>
+
+                    {/* Remember Me Switch */}
+                    <RememberMeSwitch
+                      checked={checked}
+                      onChange={handleChange}
                     />
-                  </div>
 
-                  {/* Password Input */}
-                  <div className="mb-6">
-                    <label
-                      className="block text-gray-700 mb-2"
-                      htmlFor="password"
-                    >
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      id="password"
-                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your password"
-                    />
-                  </div>
-
-                  {/* Remember Me Switch */}
-                  <RememberMeSwitch checked={checked} onChange={handleChange} />
-
-                  {/* Sign In Button */}
-                  <div className="mb-4">
-                    <button className="w-full bg-[#4FD1C5] text-white py-2 px-4 rounded-md hover:bg-[#3acabb] transition">
-                      Sign In
-                    </button>
-                  </div>
+                    {/* Sign In Button */}
+                    <div className="mb-4">
+                      <button
+                        type="submit"
+                        className="w-full bg-[#4FD1C5] text-white py-2 px-4 rounded-md hover:bg-[#3acabb] transition"
+                      >
+                        Sign In
+                      </button>
+                    </div>
+                  </form>
 
                   {/* Sign Up Link */}
                   <p className="text-center text-gray-600">
@@ -128,9 +184,19 @@ export default function SignIn() {
                       to="/signup"
                       className="text-[#4FD1C5] hover:underline"
                     >
-                      SignUp
+                      Sign Up
                     </Link>
                   </p>
+
+                  {/* Logout Button (if needed) */}
+                  <div className="mt-4 text-center">
+                    <button
+                      onClick={handleLogout}
+                      className="text-[#4FD1C5] hover:underline"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
