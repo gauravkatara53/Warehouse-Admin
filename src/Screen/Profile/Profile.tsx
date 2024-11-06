@@ -6,16 +6,11 @@ import {
   faSignOutAlt,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  faFacebook,
-  faTwitter,
-  faInstagram,
-} from "@fortawesome/free-brands-svg-icons";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
 
 export default function Profile() {
-  const [image, setImage] = useState("user5.png");
+  const [image, setImage] = useState("userde.jpg");
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +32,7 @@ export default function Profile() {
         );
 
         if (!response.ok) {
+          navigate("/signin");
           throw new Error("Failed to fetch profile data.");
         }
 
@@ -219,13 +215,16 @@ export default function Profile() {
             <div className="flex flex-wrap lg:flex-nowrap gap-6 mt-4">
               <div className="flex flex-col w-full lg:w-[55%] space-y-6 flex-shrink-0">
                 <div className="bg-white rounded-md shadow-md p-6 mx-4 sm:mx-6">
-                  <h3 className="text-lg font-bold text-gray-800">
-                    Personal Information
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <h3 className="text-lg font-bold text-gray-800">Role</h3>
+                  {/* <p className="text-sm text-gray-500 mt-2">
                     This information is used to identify you within the system.
                     Please ensure all your details are accurate.
-                  </p>
+                  </p> */}
+                  <div>
+                    <span className="text-gray-500">
+                      {profileData?.data?.role ?? "NA"}
+                    </span>
+                  </div>
 
                   <hr className="my-4" />
 
@@ -294,7 +293,7 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  <div className="mt-6">
+                  {/* <div className="mt-6">
                     <span className="font-semibold text-gray-700">
                       Social Media:{" "}
                     </span>
@@ -312,7 +311,7 @@ export default function Profile() {
                         className="text-pink-500"
                       />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

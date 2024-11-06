@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilePdf } from "@fortawesome/free-solid-svg-icons"; // Import the PDF icon
-import { invoiceData } from "./InvoiceData";
+import { invoiceData } from "../../../Data/BPInvoiceData";
 
 const InvoiceList: React.FC = () => {
   return (

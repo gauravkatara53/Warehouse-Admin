@@ -1,21 +1,36 @@
 import React from "react";
-import { bookings } from "./bookingData";
+import { bookings } from "../../../Data/DPbookingData";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const RecentBooking: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleViewAll = () => {
+    // Smooth scroll to top before navigating
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    // Delay the navigation to give time for the smooth scroll effect
+    setTimeout(() => {
+      navigate("/booking");
+    }, 100); // Adjust the timeout based on how long the scroll takes
+  };
+
   return (
     <section className="px-6 py-8">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-bold sm:text-xl">Recent Transactions</h2>
-        <Link
-          to="/booking"
+        <h2 className="text-lg font-bold sm:text-xl">Recent Booking</h2>
+        <button
+          onClick={handleViewAll}
           className="text-[#4FD1C5] hover:underline text-sm sm:text-base"
         >
           View All
-        </Link>
+        </button>
       </div>
 
       {/* Booking Cards */}

@@ -1,0 +1,11 @@
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Ensure the spinner container spans the full width */
+  min-height: 200px; /* Optional: You can set a minimum height to prevent shifts */
+}
+
+.main-content {
+  width: 100%; /* Ensure consistent content width */
+}

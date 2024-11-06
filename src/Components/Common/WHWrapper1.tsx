@@ -2,10 +2,10 @@ import React from "react";
 
 // Define the types for the props
 interface CardProps {
-  heading: string;
-  mainNumber: string;
-  sideNumber: string;
-  icon: React.ReactNode;
+  heading?: string; // Optional heading
+  mainNumber?: React.ReactNode; // Change mainNumber to React.ReactNode to accept elements
+  sideNumber?: string; // Optional side number to display
+  icon?: React.ReactNode; // Optional icon element
   className?: string; // Optional class for the entire card
 }
 
@@ -22,12 +22,19 @@ const CardWrapper1: React.FC<CardProps> = ({
     >
       {/* Left Section */}
       <div className="flex-1">
-        <h2 className="text-sm text-gray-400 font-medium ">{heading}</h2>
+        {/* Render heading only if it exists */}
+        {heading && (
+          <h2 className="text-sm text-gray-400 font-medium">{heading}</h2>
+        )}
         <div className="flex items-baseline">
-          <p className="text-md font-semibold">{mainNumber}</p>
-          <span className="text-md  font-semibold text-green-500 ml-8">
-            {sideNumber}
-          </span>
+          {/* Render mainNumber only if it exists */}
+          {mainNumber && <p className="text-md font-semibold">{mainNumber}</p>}
+          {/* Render sideNumber only if it exists */}
+          {sideNumber && (
+            <span className="text-md font-semibold text-green-500 ml-8">
+              {sideNumber}
+            </span>
+          )}
         </div>
       </div>
       {/* Right Section */}
@@ -35,6 +42,7 @@ const CardWrapper1: React.FC<CardProps> = ({
         className="flex items-center justify-center w-12 h-12 rounded-lg"
         style={{ backgroundColor: "#6F55EFA6" }}
       >
+        {/* Render icon only if it exists */}
         {icon && <div className="text-white">{icon}</div>}
       </div>
     </div>

@@ -1,5 +1,5 @@
 // TransactionSection.tsx
-import { transactionData } from "./transactionData";
+import { transactionData } from "../../../Data/DPtransactionData";
 import { Link } from "react-router-dom";
 
 type Transaction = {

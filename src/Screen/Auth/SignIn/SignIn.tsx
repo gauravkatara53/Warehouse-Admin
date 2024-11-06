@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Switch from "react-switch";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios"; // Axios for API call
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface RememberMeSwitchProps {
   checked: boolean;
@@ -36,14 +38,12 @@ export default function SignIn() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [checked, setChecked] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (nextChecked: boolean) => {
     setChecked(nextChecked);
   };
 
-  // Prevent scrolling when component is mounted
   useEffect(() => {
     document.body.style.overflow = "hidden"; // Disable scrolling
     return () => {
@@ -53,7 +53,6 @@ export default function SignIn() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     try {
       const response = await axios.post(
@@ -64,21 +63,16 @@ export default function SignIn() {
         }
       );
 
-      // Handle successful response
       if (response.data && response.data.token) {
-        // Store token in local storage
+        // Store token and user id in local storage
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("id", response.data.admin.id); // Store the admin id
         navigate("/"); // Redirect to dashboard or home
       }
     } catch (err: any) {
-      // Handle error response
-      setError(err.response?.data?.message || "Login failed");
+      // Handle error response with toast
+      toast.error(err.response?.data?.message || "Login failed");
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear the token from local storage
-    navigate("/login"); // Redirect to login page
   };
 
   return (
@@ -116,9 +110,6 @@ export default function SignIn() {
                   <p className="text-center mb-4 text-gray-400">
                     Enter your email and password
                   </p>
-
-                  {/* Error Message */}
-                  {error && <p className="text-center text-red-500">{error}</p>}
 
                   {/* Form */}
                   <form onSubmit={handleSubmit}>
@@ -187,22 +178,13 @@ export default function SignIn() {
                       Sign Up
                     </Link>
                   </p>
-
-                  {/* Logout Button (if needed) */}
-                  <div className="mt-4 text-center">
-                    <button
-                      onClick={handleLogout}
-                      className="text-[#4FD1C5] hover:underline"
-                    >
-                      Logout
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <ToastContainer /> {/* Add ToastContainer to render the toasts */}
     </div>
   );
 }

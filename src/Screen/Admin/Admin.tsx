@@ -16,30 +16,30 @@ export default function Admin() {
         {/* Top section with four CardWrapper1 components */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <CardWrapper1
-            heading="Top Booking"
-            mainNumber="150"
-            sideNumber="+20%"
+            heading="Customer Support Admins"
+            mainNumber="25"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faWallet} />}
           />
           <CardWrapper1
-            heading="Month's Booking"
-            mainNumber="200"
-            sideNumber="+35%"
+            heading="Complaint Support Admins"
+            mainNumber="10"
+            // sideNumber="+35%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faGlobe} />}
           />
           <CardWrapper1
-            heading="No.of warehouses"
+            heading=" Warehouse Support Admin"
             mainNumber="1200"
-            sideNumber="+50%"
+            // sideNumber="+50%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faUser} />}
           />
           <CardWrapper1
-            heading="Active warehouses"
+            heading="Sale Support Admin"
             mainNumber="150"
-            sideNumber="+20%"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faStar} />}
           />

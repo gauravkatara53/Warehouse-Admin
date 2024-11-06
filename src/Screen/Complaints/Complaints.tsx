@@ -17,30 +17,30 @@ export default function Complaints() {
         {/* Top section with four CardWrapper1 components */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <CardWrapper1
-            heading="Top Booking"
-            mainNumber="150"
-            sideNumber="+20%"
+            heading="No.of complaints"
+            mainNumber="15"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faWallet} />}
           />
           <CardWrapper1
-            heading="Month's Booking"
-            mainNumber="200"
-            sideNumber="+35%"
+            heading="Solved complaints"
+            mainNumber="10"
+            // sideNumber="+35%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faGlobe} />}
           />
           <CardWrapper1
-            heading="No.of warehouses"
-            mainNumber="1200"
-            sideNumber="+50%"
+            heading="Pending complaints"
+            mainNumber="12"
+            // sideNumber="+50%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faUser} />}
           />
           <CardWrapper1
-            heading="Active warehouses"
-            mainNumber="150"
-            sideNumber="+20%"
+            heading="Replied complaints"
+            mainNumber="8"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faStar} />}
           />
@@ -51,7 +51,7 @@ export default function Complaints() {
           {/* Left part */}
           <div className="flex flex-col w-full lg:w-[65%] space-y-6 flex-shrink-0">
             {/* CardWrapper2 components */}
-            <div className="bg-white min-h-[200px] rounded-lg">
+            <div className=" min-h-[200px] rounded-lg">
               <ComplaintsList />
             </div>
           </div>

@@ -16,30 +16,30 @@ export default function Earning() {
         {/* Top section with four CardWrapper1 components */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <CardWrapper1
-            heading="Top Booking"
-            mainNumber="150"
-            sideNumber="+20%"
+            heading="Total Earning"
+            mainNumber="Rs.173,000"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faWallet} />}
           />
           <CardWrapper1
-            heading="Month's Booking"
-            mainNumber="200"
-            sideNumber="+35%"
+            heading="Week's Earning"
+            mainNumber="Rs.500,000"
+            // sideNumber="+35%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faGlobe} />}
           />
           <CardWrapper1
-            heading="No.of warehouses"
-            mainNumber="1200"
-            sideNumber="+50%"
+            heading="Month's Earning"
+            mainNumber="Rs.173,000"
+            // sideNumber="+50%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faUser} />}
           />
           <CardWrapper1
-            heading="Active warehouses"
-            mainNumber="150"
-            sideNumber="+20%"
+            heading="Year's Earning"
+            mainNumber="Rs.173,000"
+            // sideNumber="+20%"
             className="sm:mb-0 -mb-3"
             icon={<FontAwesomeIcon icon={faStar} />}
           />
@@ -50,7 +50,7 @@ export default function Earning() {
           {/* Left part */}
           <div className="flex flex-col w-full lg:w-[55%] space-y-6 flex-shrink-0">
             {/* CardWrapper2 components */}
-            <div className="bg-white min-h-[200px] rounded-lg">
+            <div className=" min-h-[200px] rounded-lg">
               <TransactionSectionAll></TransactionSectionAll>
             </div>
           </div>

@@ -6,7 +6,11 @@ import {
   faCalendarCheck,
   faBuilding, // Replace with appropriate icon
   faExclamationCircle,
-  faKey, // Replace with appropriate icon
+  faKey,
+  faUserTag,
+  faHandshake,
+
+  // Replace with appropriate icon
 } from "@fortawesome/free-solid-svg-icons";
 
 export interface Tab {
@@ -37,6 +41,11 @@ export const tabs: Tab[] = [
     label: "Warehouse",
   },
   {
+    path: "/partners",
+    icon: faHandshake, // Replace with appropriate icon
+    label: "Partner",
+  },
+  {
     path: "/complaints",
     icon: faExclamationCircle, // Replace with appropriate icon
     label: "Complaints",
@@ -50,5 +59,10 @@ export const tabs: Tab[] = [
     path: "/approve-admins",
     icon: faKey,
     label: "Approve Admins",
+  },
+  {
+    path: "/customers",
+    icon: faUserTag,
+    label: "Customers",
   },
 ];

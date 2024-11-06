@@ -1,0 +1,7 @@
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed; /* Ensures the cursor changes to a not-allowed sign */
+}
