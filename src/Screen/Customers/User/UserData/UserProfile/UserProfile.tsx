@@ -13,6 +13,8 @@ interface User {
   lastActive: string;
   dob: string;
   createdAt: string;
+  username: string;
+  avatar: string;
 }
 
 interface UserProfileProps {
@@ -25,7 +27,7 @@ export default function UserProfile({ user, onBackClick }: UserProfileProps) {
     <div className="flex flex-wrap lg:flex-nowrap -mt-8">
       <div className="p-2 -mt-3 sm:p-4 lg:mt-0 sm:mt-6">
         <ProfileAboveSec user={user} onBackClick={onBackClick} />
-        <RecentListings />
+        <RecentListings user={user} />
       </div>
     </div>
   );

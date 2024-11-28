@@ -6,15 +6,20 @@ interface Partner {
   _id: string;
   name: string;
   address: string;
-  email: string; // Changed from String to string
+  email: String;
   phone: string;
   membershipStatus: string;
   kycStatus: string;
   date: string;
   createdAt: string;
-  gender: string; // Changed from String to string
-  lastActive: string; // Changed from String to string
-  dob: string; // Changed from String to string
+  gender: String;
+  lastActive: String;
+  dob: String;
+  avatar: string;
+  businessName: string;
+  rentOrSell: string;
+  numberOfBooking: string;
+  price: { amount: number; title: string; discount: number }[];
 }
 
 interface PartnerIndexProps {

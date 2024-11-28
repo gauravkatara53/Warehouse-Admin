@@ -14,6 +14,11 @@ interface Partner {
   gender: String;
   lastActive: String;
   dob: String;
+  avatar: string;
+  businessName: string;
+  rentOrSell: string;
+  numberOfBooking: string;
+  price: { amount: number; title: string; discount: number }[];
 }
 
 interface PartnerProfileProps {
@@ -29,7 +34,7 @@ export default function PartnerProfile({
     <div className="flex flex-wrap lg:flex-nowrap -mt-8">
       <div className="p-2 -mt-3 sm:p-4 lg:mt-0 sm:mt-6">
         <ProfileAboveSec partner={partner} onBackClick={onBackClick} />
-        <RecentListings />
+        <RecentListings partner={partner} />
       </div>
     </div>
   );

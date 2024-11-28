@@ -25,7 +25,7 @@ const WarehouseCard = () => {
       const data = await apiService.get<WarehouseStatsResponse>(
         "/admin/getCardStatistics"
       );
-      if (data && data.success && data.data.length > 0) {
+      if (data && data.success && data.data.length > 0 && !dataFetched) {
         const stats = data.data[0]; // Access the first object in the data array
         setWarehouseStats({
           totalWarehouses: stats.totalWarehouses,
@@ -36,13 +36,14 @@ const WarehouseCard = () => {
     };
 
     fetchPartnerStats();
-  }, []);
+  }, [dataFetched]);
 
   const AnimatedNumber = ({ target }: { target: number }) => {
     const { number } = useSpring({
       from: { number: 0 },
       to: { number: dataFetched ? target : 0 },
       config: { duration: 500 },
+      reset: !dataFetched, // Ensure animation starts only once
     });
 
     return <animated.span>{number.to((n) => n.toFixed(0))}</animated.span>;

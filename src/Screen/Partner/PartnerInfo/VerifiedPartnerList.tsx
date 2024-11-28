@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
+import Message from "@/Components/Common/NotFoundPage/Message";
+import apiService from "@/Components/APIService/apiService";
 
 interface Partner {
   _id: string;
@@ -24,50 +25,71 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
   setCurrentPage,
   setTotalPages,
 }) => {
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const PARTNERS_PER_PAGE = 10;
 
-  const limit = 5;
+  const fetchVerifiedPartners = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      let page = 1;
+      const fetchedPartners: Partner[] = [];
+      while (true) {
+        const response = await apiService.get<{
+          success: boolean;
+          data: Partner[];
+          page: number;
+          pages: number;
+          limit: number;
+          total: number;
+        }>(
+          `/admin/kyc/partners?status=Verified&page=${page}&limit=${PARTNERS_PER_PAGE}`
+        );
+
+        if (response?.success && response.data?.length > 0) {
+          fetchedPartners.push(...response.data);
+          if (page >= response.pages) break;
+          page++;
+        } else {
+          break;
+        }
+      }
+      setAllPartners(fetchedPartners);
+      setTotalPages(Math.ceil(fetchedPartners.length / PARTNERS_PER_PAGE));
+    } catch (err) {
+      setError("Failed to fetch data. Please check your authentication.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchVerifiedPartners = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Authentication token is missing.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          `https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/kyc/partners?status=Verified&limit=${limit}&page=${currentPage}&search=${searchTerm}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = response.data;
-        setPartners(data.data);
-        setTotalPages(Math.ceil(data.total / limit));
-        setError(null);
-        setLoading(false);
-      } catch (error) {
-        setError("Failed to fetch data. Please check your authentication.");
-        setLoading(false);
-      }
-    };
-
     fetchVerifiedPartners();
-  }, [currentPage, searchTerm, currentPage]);
+  }, []);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to the first page on search
+    setCurrentPage(1);
   };
+  const filteredPartners = allPartners.filter(
+    (partner) =>
+      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.phone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedPartners = filteredPartners.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  const paginatedPartners = sortedPartners.slice(
+    (currentPage - 1) * PARTNERS_PER_PAGE,
+    currentPage * PARTNERS_PER_PAGE
+  );
 
   const Spinner = () => (
     <div className="flex justify-center items-center mt-4">
@@ -82,20 +104,20 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
           type="text"
           placeholder="Search by name or phone"
           value={searchTerm}
-          onChange={handleSearch}
+          onChange={handleSearchChange}
           className="border p-2 rounded w-full"
         />
       </div>
 
-      {error && <p className="text-red-500">{error}</p>}
-
       {loading ? (
         <Spinner />
-      ) : partners.length === 0 ? (
-        <p>No partners found.</p>
+      ) : error ? (
+        <Message message="Something went Wrong" />
+      ) : sortedPartners.length === 0 ? (
+        <Message message="No Patrner Found." />
       ) : (
         <>
-          {partners.map((partner) => (
+          {paginatedPartners.map((partner) => (
             <div
               key={partner._id}
               className="rounded-lg p-4 mb-4 border border-gray-200"

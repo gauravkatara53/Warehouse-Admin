@@ -13,6 +13,8 @@ interface User {
   lastActive: string;
   dob: string;
   createdAt: string;
+  username: string;
+  avatar: string;
 }
 interface UserIndexProps {
   onSelectUser: (user: User) => void;

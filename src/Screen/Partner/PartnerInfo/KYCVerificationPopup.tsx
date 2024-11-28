@@ -163,7 +163,7 @@ const KYCVerificationPopup: React.FC<KYCVerificationPopupProps> = ({
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center pb-4 items-center">
             <ClipLoader size={30} color="#4A90E2" />
           </div>
         ) : errorMessage ? (

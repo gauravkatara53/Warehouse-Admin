@@ -3,7 +3,7 @@ const NotDataFound = () => {
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="text-center">
         <div className="w-full flex items-center flex-wrap justify-center gap-10">
-          {/* <div className="grid gap-4 w-60">
+          <div className="grid gap-4 w-60">
             <svg
               className="mx-auto"
               xmlns="http://www.w3.org/2000/svg"
@@ -94,8 +94,8 @@ const NotDataFound = () => {
                 </button>
               </div>
             </div>
-          </div> */}
-          {/* <div className="grid gap-4 w-60">
+          </div>
+          <div className="grid gap-4 w-60">
             <svg
               className="mx-auto"
               xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +210,7 @@ const NotDataFound = () => {
                 </button>
               </div>
             </div>
-          </div> */}
+          </div>
           <div className="grid gap-4 w-60">
             <svg
               className="mx-auto"

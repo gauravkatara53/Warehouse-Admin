@@ -4,7 +4,7 @@ import Pagination from "../../../../Components/Common/Pagination/Pagination";
 import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
 import ClipLoader from "react-spinners/ClipLoader";
-
+import Message from "@/Components/Common/NotFoundPage/Message";
 interface User {
   _id: string;
   name: string;
@@ -17,7 +17,8 @@ interface User {
   lastActive: string;
   dob: string;
   createdAt: string;
-  positionNumber: number;
+  username: string;
+  avatar: string;
 }
 
 interface UserDataProps {
@@ -37,7 +38,7 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const usersPerPage = 5;
+  const usersPerPage = 10;
 
   // Fetch all users from the API
   useEffect(() => {
@@ -137,7 +138,6 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
 
   return (
     <div>
-      {error && <div className="error-message">{error}</div>}
       <FilterBar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
@@ -182,6 +182,14 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
                   <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
                 </td>
               </tr>
+            ) : error ? (
+              <td colSpan={7} className="text-center py-6">
+                <Message message="Something went Wrong" />
+              </td>
+            ) : paginatedUsers.length === 0 ? (
+              <td colSpan={7} className="text-center py-6">
+                <Message message="No User found." />
+              </td>
             ) : (
               paginatedUsers.map((user) => (
                 <tr

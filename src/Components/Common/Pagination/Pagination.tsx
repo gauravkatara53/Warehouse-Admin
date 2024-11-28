@@ -10,50 +10,22 @@ const Pagination: React.FC<{
   currentPage: number;
   setCurrentPage: (page: number) => void;
 }> = ({ totalPages, currentPage, setCurrentPage }) => {
-  //   const [showDropdown, setShowDropdown] = useState(false);
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handleNext = () =>
+    currentPage < totalPages && setCurrentPage(currentPage + 1);
 
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const handlePrev = () => currentPage > 1 && setCurrentPage(currentPage - 1);
 
-  const handlePrev = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  //   const toggleDropdown = () => {
-  //     setShowDropdown(!showDropdown);
-  //   };
-
-  // Calculate the range of page numbers to display
   const getVisiblePages = () => {
     const totalVisiblePages = 4;
-    let startPage: number;
-    let endPage: number;
+    const halfVisible = Math.floor(totalVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, currentPage + halfVisible);
 
-    if (totalPages <= totalVisiblePages) {
-      startPage = 1;
-      endPage = totalPages;
-    } else {
-      const halfVisible = Math.floor(totalVisiblePages / 2);
-      startPage = Math.max(1, currentPage - halfVisible);
-      endPage = Math.min(totalPages, currentPage + halfVisible);
-
-      if (startPage === 1) {
-        endPage = Math.min(totalVisiblePages, totalPages);
-      }
-
-      if (endPage === totalPages) {
-        startPage = Math.max(1, totalPages - totalVisiblePages + 1);
-      }
-    }
+    if (startPage === 1) endPage = Math.min(totalVisiblePages, totalPages);
+    if (endPage === totalPages)
+      startPage = Math.max(1, totalPages - totalVisiblePages + 1);
 
     return Array.from(
       { length: endPage - startPage + 1 },
@@ -64,12 +36,12 @@ const Pagination: React.FC<{
   const visiblePages = getVisiblePages();
 
   return (
-    <div className="flex items-center p-2 pt-10  rounded text-gray-700">
+    <div className="flex items-center p-2 pt-10 rounded text-gray-700">
       <div
         className={`cursor-pointer w-10 h-10 flex items-center justify-center bg-white border rounded-md mx-1 ${
           currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
         }`}
-        onClick={currentPage > 1 ? handlePrev : undefined} // Prevents click if at the first page
+        onClick={handlePrev}
       >
         <FontAwesomeIcon icon={faChevronLeft} />
       </div>
@@ -92,12 +64,12 @@ const Pagination: React.FC<{
         className={`cursor-pointer w-10 h-10 flex items-center justify-center bg-white border rounded-md mx-1 ${
           currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
         }`}
-        onClick={currentPage < totalPages ? handleNext : undefined} // Prevents click if at the last page
+        onClick={handleNext}
       >
         <FontAwesomeIcon icon={faChevronRight} />
       </div>
 
-      <div className="ml-6 flex items-center bg-white border rounded-md p-2 shadow-sm whitespace-nowrap ">
+      <div className="ml-6 flex items-center bg-white border rounded-md p-2 shadow-sm whitespace-nowrap">
         <span className="mr-2">Total Pages: {totalPages}</span>
       </div>
     </div>

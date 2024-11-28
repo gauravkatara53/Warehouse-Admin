@@ -1,34 +1,75 @@
-// RecentListings.tsx
 import { useState, useEffect } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import Pagination from "@/Components/Common/Pagination/Pagination";
-import ListingDatas, {
-  ListingData,
-} from "../../../../../../Data/PartnerProfileList"; // Ensure the correct path
+import apiService from "@/Components/APIService/apiService";
+import Message from "@/Components/Common/NotFoundPage/Message";
 
-const RecentListings = () => {
+interface WarehouseListing {
+  _id: string;
+  name: string;
+  rentOrSell: string;
+  createdAt: string;
+  date: string;
+  address: string;
+  numberOfBooking: string;
+  price: { amount: number; title: string; discount: number }[];
+}
+
+interface ProfileListingProps {
+  partner: WarehouseListing;
+}
+
+const RecentListings: React.FC<ProfileListingProps> = ({ partner }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [listingData, setListingData] = useState<ListingData[]>([]);
+  const [listingData, setListingData] = useState<WarehouseListing[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const usersPerPage = 5;
 
-  // Simulating data fetching
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRecentListings = async () => {
       setLoading(true);
+      let page = 1;
+      let fetchedList: WarehouseListing[] = [];
+      let totalFetchedList = 0;
       try {
-        // Simulate an API call
-        const data = ListingDatas; // Replace with apiService call if needed
-        setListingData(data);
+        do {
+          const response = await apiService.get<{
+            data: WarehouseListing[];
+            page: number;
+            pages: number;
+            limit: number;
+            totalCount: number;
+          }>(
+            `/admin/partner-recent-warehouse/${partner._id}?page=${page}&limit=${usersPerPage}`
+          );
+          if (response && response.data) {
+            const formattedData = response.data.map((warehouseListing) => ({
+              ...warehouseListing,
+              date: warehouseListing.createdAt
+                ? new Intl.DateTimeFormat("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }).format(new Date(warehouseListing.createdAt))
+                : "N/A",
+            }));
+            console.log(formattedData);
+            fetchedList = [...fetchedList, ...formattedData];
+            totalFetchedList = response.totalCount;
+            page++;
+          }
+        } while (page <= Math.ceil(totalFetchedList / usersPerPage));
+        setListingData(fetchedList);
       } catch (err) {
-        setError("Failed to fetch data.");
+        setError("Failed to fetch listings. Please try again.");
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+
+    fetchRecentListings();
+  }, [partner._id]);
 
   const totalPages = Math.ceil(listingData.length / usersPerPage);
   const indexOfLastUser = currentPage * usersPerPage;
@@ -36,75 +77,81 @@ const RecentListings = () => {
   const currentPartners = listingData.slice(indexOfFirstUser, indexOfLastUser);
 
   return (
-    <div className="relative overflow-hidden -mt-80 ">
+    <div className="relative overflow-hidden -mt-80">
       {error && <div className="error-message">{error}</div>}
       <div className="relative overflow-x-auto my-4">
         <h1 className="text-3xl font-semibold text-gray-700 mb-4">
           Recent Listings
         </h1>
-        <div className="table-responsive">
-          <table className="min-w-full table-auto text-sm text-left rtl:text-right font-sm text-gray-500 border-b border-gray-300">
-            <thead className="text-xs text-gray-500 bg-gray-100">
+        <table className="min-w-full table-auto text-sm text-left rtl:text-right font-sm text-gray-500 border-b border-gray-300">
+          <thead className="text-xs text-gray-500 bg-gray-100">
+            <tr>
+              <th className="px-8 py-3 border-b border-gray-300">Sn.no</th>
+              <th className="px-8 py-3 border-b border-gray-300">Warehouse</th>
+              <th className="px-8 py-3 border-b border-gray-300">
+                Date created
+              </th>
+              <th className="px-8 py-3 border-b border-gray-300">Amount</th>
+              <th className="px-8 py-3 border-b border-gray-300">Address</th>
+              <th className="px-8 py-3 border-b border-gray-300">
+                No of Bookings
+              </th>
+              <th className="px-8 py-3 border-b border-gray-300 whitespace-nowrap">
+                Warehouse Type
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  {" "}
-                  {/* Increased padding */}
-                  Sn.no
-                </th>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  Warehouse
-                </th>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  Address
-                </th>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  Date Created
-                </th>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  Bookings
-                </th>
-                <th scope="col" className="px-8 py-3 border-b border-gray-300">
-                  Warehouse Type
-                </th>
+                <td colSpan={8} className="text-center py-6">
+                  <ClipLoader size={50} color="#4FD1C5" loading={loading} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-6">
-                    <div className="flex justify-center items-center">
-                      <ClipLoader
-                        size={50}
-                        color={"#4FD1C5"}
-                        loading={loading}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentPartners.map((listing) => (
-                  <tr key={listing.SnNo} className="border-b border-gray-300">
-                    <th
-                      scope="row"
-                      className="px-8 py-4 font-medium whitespace-nowrap"
-                    >
-                      {listing.SnNo || "N/A"}
-                    </th>
-                    <td className="px-8 py-4">{listing.Warehouse || "N/A"}</td>
-                    <td className="px-8 py-4">{listing.address || "N/A"}</td>
-                    <td className="px-8 py-4">
-                      {listing.datecreated || "N/A"}
+            ) : error ? (
+              <td colSpan={7} className="text-center py-6">
+                <Message message="Something went Wrong" />
+              </td>
+            ) : currentPartners.length === 0 ? (
+              <td colSpan={7} className="text-center py-6">
+                <Message message="No User found." />
+              </td>
+            ) : (
+              currentPartners.map((listing, index) => {
+                // Calculate total amount
+                const totalAmount = listing.price.reduce(
+                  (acc, item) => acc + item.amount - item.discount,
+                  0
+                );
+                return (
+                  <tr key={listing._id} className="border-b border-gray-300">
+                    <td className="px-8 py-4 font-medium whitespace-nowrap">
+                      {indexOfFirstUser + index + 1}
                     </td>
-                    <td className="px-8 py-4">{listing.bookings || "N/A"}</td>
-                    <td className="px-8 py-4">
-                      {listing.warehousetype || "N/A"}
+                    <td className="px-8 py-4 whitespace-nowrap">
+                      {listing.name || "N/A"}
+                    </td>
+                    <td className="px-8 py-4 whitespace-nowrap">
+                      {listing.date || "N/A"}
+                    </td>
+                    <td className="px-8 py-4 whitespace-nowrap">
+                      ₹ {totalAmount || "N/A"}
+                    </td>
+                    <td className="px-8 py-4 whitespace-nowrap">
+                      {listing.address || "N/A"}
+                    </td>
+                    <td className="px-8 py-4 whitespace-nowrap">
+                      {listing.numberOfBooking || "N/A"}
+                    </td>
+                    <td className="px-8 py-4 text-blue-600">
+                      {listing.rentOrSell || "N/A"}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
       <Pagination

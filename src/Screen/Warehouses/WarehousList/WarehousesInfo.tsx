@@ -11,6 +11,7 @@ import Pagination from "@/Components/Common/Pagination/Pagination";
 import RentOrSellTag from "../../../Components/Warehouse/RentorSellTag";
 import DateRangeModal from "../../../Components/Warehouse/DateRangeModal";
 import "react-datepicker/dist/react-datepicker.css";
+import Message from "@/Components/Common/NotFoundPage/Message";
 
 interface Price {
   title: string;
@@ -34,6 +35,14 @@ interface Warehouse {
   phone: string;
   createdAt: string;
   bookings: string;
+  partnerName: string;
+  ratingCount: string;
+  state: string;
+  city: string;
+  pincode: number;
+  address: string;
+  country: string;
+  thumbnail: string;
 }
 interface WarehouseInfoProps {
   onWarehouseSelect: (Warehouse: Warehouse) => void;
@@ -50,7 +59,7 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [allWarehouse, setAllWarehouse] = useState<Warehouse[]>([]);
-  const warehousePerPage = 5;
+  const warehousePerPage = 10;
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -107,9 +116,12 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
   const closeModal = () => setModalOpen(false);
 
   const filteredWarehouses = allWarehouse.filter((warehouse) => {
-    const matchesSearchTerm = warehouse.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesSearchTerm =
+      warehouse.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      warehouse.warehouseAddress
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      warehouse._id.toLowerCase().includes(searchTerm.toLowerCase());
 
     const isWithinDateRange =
       (!startDate || new Date(warehouse.createdAt) >= startDate) &&
@@ -168,9 +180,9 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
             <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
           </div>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <Message message="Something went Wrong" />
         ) : filteredWarehouses.length === 0 ? (
-          <p>No results found.</p>
+          <Message message="No Warehouse found." />
         ) : (
           paginatedWarehouse.map((warehouse) => (
             <div

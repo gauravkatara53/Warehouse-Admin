@@ -4,21 +4,26 @@ import StatusTag from "../../../../Components/Customers/StatusTag";
 import Pagination from "../../../../Components/Common/Pagination/Pagination";
 import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
+import Message from "@/Components/Common/NotFoundPage/Message";
 
 interface Partner {
   _id: string;
   name: string;
   address: string;
-  email: string;
+  email: String;
   phone: string;
   membershipStatus: string;
   kycStatus: string;
   date: string;
   createdAt: string;
-  gender: string;
-  lastActive: string;
-  dob: string;
-  positionNumber: number;
+  gender: String;
+  lastActive: String;
+  dob: String;
+  avatar: string;
+  businessName: string;
+  rentOrSell: string;
+  numberOfBooking: string;
+  price: { amount: number; title: string; discount: number }[];
 }
 
 interface PartnerDataProps {
@@ -48,48 +53,63 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
   const [selectedOrderType, setSelectedOrderType] = useState<string | null>(
     null
   );
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const usersPerPage = 5;
+  const usersPerPage = 10;
 
   useEffect(() => {
-    const fetchPartners = async () => {
+    const fetchAllPartners = async () => {
       setLoading(true);
+      let page = 1;
+      let fetchedPartners: Partner[] = [];
+      let totalFetchedPartners = 0;
+
       try {
-        const response = await apiService.get<{ data: Partner[] }>(
-          "/admin/partner/all-partners"
-        );
-        if (response && response.data) {
-          const formattedData = response.data.map((partner, index) => ({
-            ...partner,
-            kycStatus:
-              partner.kycStatus === "Pending"
-                ? "processing"
-                : partner.kycStatus === "Cancel"
-                ? "rejected"
-                : partner.kycStatus,
-            date: partner.createdAt
-              ? new Intl.DateTimeFormat("en-GB", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                }).format(new Date(partner.createdAt))
-              : "N/A",
-            positionNumber: index + 1, // Assign a permanent position number here
-          }));
-          setPartners(formattedData);
-        }
+        do {
+          const response = await apiService.get<{
+            data: Partner[];
+            page: number;
+            pages: number;
+            pageSize: number;
+            total: number;
+          }>(
+            `/admin/partner/all-partners?page=${page}&pageSize=${usersPerPage}`
+          );
+          if (response && response.data) {
+            const formattedData = response.data.map((partner, index) => ({
+              ...partner,
+              kycStatus:
+                partner.kycStatus === "Pending"
+                  ? "processing"
+                  : partner.kycStatus === "Cancel"
+                  ? "rejected"
+                  : partner.kycStatus,
+              date: partner.createdAt
+                ? new Intl.DateTimeFormat("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }).format(new Date(partner.createdAt))
+                : "N/A",
+              positionNumber: index + 1, // Assign a permanent position number here
+            }));
+            fetchedPartners = [...fetchedPartners, ...formattedData];
+            totalFetchedPartners = response.total;
+            page++;
+          }
+        } while (page <= Math.ceil(totalFetchedPartners / usersPerPage));
+        setAllPartners(fetchedPartners);
       } catch (error) {
         setError("Failed to load data. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-    fetchPartners();
+    fetchAllPartners();
   }, []);
 
-  const filteredUsers = partners.filter((partner) => {
+  const filteredUsers = allPartners.filter((partner) => {
     const matchesDate = selectedDate ? partner.date === selectedDate : true;
     const matchesKYCStatus = selectedKYCStatus
       ? partner.kycStatus?.toLowerCase() === selectedKYCStatus.toLowerCase()
@@ -110,9 +130,19 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
     } else if (selectedOrderType === "Z-A") {
       sortedUsers.sort((a, b) => b.name.localeCompare(a.name));
     } else if (selectedOrderType === "1-50") {
-      sortedUsers.sort((a, b) => a.positionNumber - b.positionNumber);
+      // Sort by display ID (1, 2, 3...) based on the order they appear in the sorted users
+      sortedUsers.sort((a, b) => {
+        const indexA = allPartners.findIndex((u) => u._id === a._id);
+        const indexB = allPartners.findIndex((u) => u._id === b._id);
+        return indexA - indexB; // Ascending order based on original position
+      });
     } else if (selectedOrderType === "50-1") {
-      sortedUsers.sort((a, b) => b.positionNumber - a.positionNumber);
+      // Sort by display ID (1, 2, 3...) in reverse order
+      sortedUsers.sort((a, b) => {
+        const indexA = allPartners.findIndex((u) => u._id === a._id);
+        const indexB = allPartners.findIndex((u) => u._id === b._id);
+        return indexB - indexA; // Descending order based on original position
+      });
     }
 
     return sortedUsers;
@@ -120,13 +150,14 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
 
   const sortedUsers = sortFilteredUsers(filteredUsers);
   const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentPartners = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
 
+  // Get users for the current page
+  const paginatedPartner = sortedUsers.slice(
+    (currentPage - 1) * usersPerPage,
+    currentPage * usersPerPage
+  );
   return (
     <div className="relative overflow-hidden">
-      {error && <div className="error-message">{error}</div>}
       <FilterBar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
@@ -138,7 +169,7 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
         setSelectedOrderType={setSelectedOrderType}
       />
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg my-4">
-        <div className="table-responsive overflow-x-auto max-w-full max-h-[70vh] sm:overflow-hidden">
+        <div className="table-responsive overflow-x-auto max-w-full  sm:overflow-hidden">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 border">
               <tr>
@@ -172,8 +203,16 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                     <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
                   </td>
                 </tr>
+              ) : error ? (
+                <td colSpan={7} className="text-center py-6">
+                  <Message message="Something went Wrong" />
+                </td>
+              ) : paginatedPartner.length === 0 ? (
+                <td colSpan={7} className="text-center py-6">
+                  <Message message="No Partner found." />
+                </td>
               ) : (
-                currentPartners.map((partner) => (
+                paginatedPartner.map((partner) => (
                   <tr
                     key={partner._id}
                     onClick={() => onSelectPartner(partner)}
@@ -183,7 +222,8 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                       scope="row"
                       className="px-6 py-4 font-medium whitespace-nowrap"
                     >
-                      {partner.positionNumber}
+                      {/* Calculate the ID based on the user's original position in allUsers */}
+                      {allPartners.findIndex((u) => u._id === partner._id) + 1}
                     </th>
 
                     <td className="px-6 py-4 whitespace-nowrap">

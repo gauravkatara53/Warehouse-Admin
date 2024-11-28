@@ -50,7 +50,7 @@ export default function Admin() {
           {/* Left part */}
           <div className="flex flex-col w-full lg:w-[65%] space-y-6 flex-shrink-0">
             {/* CardWrapper2 components */}
-            <div className="bg-white min-h-[200px] rounded-lg">
+            <div className=" min-h-[200px] rounded-lg">
               <Applicants></Applicants>
             </div>
           </div>

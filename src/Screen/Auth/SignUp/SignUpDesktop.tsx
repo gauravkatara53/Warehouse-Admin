@@ -1,47 +1,19 @@
-import Switch from "react-switch";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import toast styles
-
-interface RememberMeSwitchProps {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
-
-const RememberMeSwitch: React.FC<RememberMeSwitchProps> = ({
-  checked,
-  onChange,
-}) => {
-  return (
-    <div className="flex items-center mb-6">
-      <Switch
-        onChange={onChange}
-        checked={checked}
-        offColor="#BDC3C7"
-        onColor="#4FD1C5"
-        handleDiameter={20}
-        uncheckedIcon={false}
-        checkedIcon={false}
-        className="react-switch"
-        id="remember-me-switch"
-      />
-      <label htmlFor="remember-me-switch" className="ml-3 text-gray-700">
-        Remember me
-      </label>
-    </div>
-  );
-};
+import "react-toastify/dist/ReactToastify.css";
+import apiService from "@/Components/APIService/apiService"; // Import the common API file
+import ClipLoader from "react-spinners/ClipLoader";
 
 export default function SignUpDesktop() {
-  const [checked, setChecked] = useState<boolean>(false);
   const [roleOpen, setRoleOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleRoleToggle = () => {
     setRoleOpen(!roleOpen);
@@ -50,10 +22,6 @@ export default function SignUpDesktop() {
   const handleRoleSelect = (role: string) => {
     setSelectedRole(role);
     setRoleOpen(false);
-  };
-
-  const handleChange = (nextChecked: boolean) => {
-    setChecked(nextChecked);
   };
 
   const handleSubmit = async () => {
@@ -67,40 +35,24 @@ export default function SignUpDesktop() {
       return;
     }
 
-    const signupData = {
-      email,
-      password,
-      role: selectedRole,
-    };
+    setLoading(true); // Start loading
+    const signupData = { email, password, role: selectedRole };
 
     try {
-      const response = await fetch(
-        "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(signupData),
-        }
-      );
+      const result = await apiService.post("/admin/signup", signupData);
 
-      if (!response.ok) {
-        toast.error("Something went wrong");
-        return;
+      if (result) {
+        toast.success("Signup successful!");
+        setTimeout(() => {
+          navigate("/signin");
+        }, 3000);
+      } else {
+        toast.error("Signup failed. Please try again later.");
       }
-
-      const result = await response.json();
-      console.log("Signup successful", result);
-      toast.success("Signup successful!");
-
-      // Redirect to sign in page after 3 seconds
-      setTimeout(() => {
-        navigate("/signin");
-      }, 3000);
     } catch (error) {
-      console.error("Signup failed", error);
       toast.error("Signup failed. Please try again later.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -115,7 +67,6 @@ export default function SignUpDesktop() {
             className="w-full h-auto object-cover hidden sm:block"
           />
 
-          {/* Section Overlay */}
           <div className="relative top-1/10 -mt-10">
             <div className="relative h-screen bg-cover bg-center">
               <div className="flex justify-center items-center h-full">
@@ -123,12 +74,10 @@ export default function SignUpDesktop() {
                   className="relative bg-white p-6 rounded-3xl shadow-lg overflow-y-auto max-h-[90vh] z-10"
                   style={{ marginTop: "-40%", width: "70%" }}
                 >
-                  {/* Logo */}
                   <div className="absolute top-4 left-4">
                     <img src="logo1.png" alt="Logo" className="h-12" />
                   </div>
 
-                  {/* Welcome Heading */}
                   <h2
                     className="text-4xl font-bold mb-2 mt-16 text-center"
                     style={{ color: "#4FD1C5" }}
@@ -139,11 +88,8 @@ export default function SignUpDesktop() {
                     Enter your email and password
                   </p>
 
-                  {/* Fields Section */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Left Column - Email & Role */}
                     <div>
-                      {/* Email Input */}
                       <div className="mb-4">
                         <label
                           className="block text-gray-700 mb-2"
@@ -161,7 +107,6 @@ export default function SignUpDesktop() {
                         />
                       </div>
 
-                      {/* Role Input */}
                       <div className="relative mb-4">
                         <label
                           className="block text-gray-700 mb-2"
@@ -203,9 +148,7 @@ export default function SignUpDesktop() {
                         )}
                       </div>
                     </div>
-                    {/* Right Column - Password & Confirm Password */}
                     <div>
-                      {/* Password Input */}
                       <div className="mb-4">
                         <label
                           className="block text-gray-700 mb-2"
@@ -223,7 +166,6 @@ export default function SignUpDesktop() {
                         />
                       </div>
 
-                      {/* Confirm Password Input */}
                       <div className="mb-6">
                         <label
                           className="block text-gray-700 mb-2"
@@ -243,20 +185,19 @@ export default function SignUpDesktop() {
                     </div>
                   </div>
 
-                  {/* Remember Me Switch */}
-                  <RememberMeSwitch checked={checked} onChange={handleChange} />
-
-                  {/* Sign Up Button */}
                   <div className="mb-4 flex justify-center">
                     <button
                       onClick={handleSubmit}
-                      className="w-1/2 bg-[#4FD1C5] text-white py-2 px-4 rounded-md hover:bg-[#3acabb] transition"
+                      className="w-1/2 bg-[#4FD1C5] text-white py-2 px-4 rounded-md hover:bg-[#3acabb] transition flex justify-center items-center"
                     >
-                      Sign Up
+                      {loading ? (
+                        <ClipLoader size={20} color="#ffffff" />
+                      ) : (
+                        "Sign Up"
+                      )}
                     </button>
                   </div>
 
-                  {/* Sign In Link */}
                   <p className="text-center text-gray-600">
                     Already have an account?{" "}
                     <Link
@@ -272,7 +213,7 @@ export default function SignUpDesktop() {
           </div>
         </div>
       </div>
-      <ToastContainer /> {/* Add the toast container here */}
+      <ToastContainer />
     </div>
   );
 }

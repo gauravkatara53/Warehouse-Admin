@@ -1,23 +1,63 @@
-import React from "react";
-import { bookings } from "../../../Data/DPbookingData";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
+import apiService from "@/Components/APIService/apiService"; // Adjust this path if necessary
+import Message from "@/Components/Common/NotFoundPage/Message";
+
+interface Booking {
+  _id: string;
+  orderId: string;
+  orderStatus: string;
+  sellOrRent: string;
+  warehouseName: string;
+  warehouseAddress: string;
+  about: string;
+  category: string;
+  thumbnail: string;
+  partnerName: string;
+  partnerPhone: string;
+  userName: string;
+  userPhone: string;
+}
 
 const RecentBooking: React.FC = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Fetch recent bookings from API
+    const fetchBookings = async () => {
+      setLoading(true);
+      try {
+        const response = await apiService.get<{ data: Booking[] }>(
+          "/admin/dashboard-recent-booking"
+        );
+        if (response && response.data) {
+          setBookings(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        setError("Something went wrong"); // Update error state
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
   const handleViewAll = () => {
-    // Smooth scroll to top before navigating
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
-
-    // Delay the navigation to give time for the smooth scroll effect
     setTimeout(() => {
       navigate("/booking");
-    }, 100); // Adjust the timeout based on how long the scroll takes
+    }, 100);
   };
 
   return (
@@ -33,37 +73,51 @@ const RecentBooking: React.FC = () => {
         </button>
       </div>
 
-      {/* Booking Cards */}
-      <div className="mt-4 space-y-4">
-        {bookings.map((booking, index) => (
-          <div
-            key={index}
-            className="flex justify-between items-center bg-gray-100 p-4 rounded-md"
-          >
-            {/* Booking Info */}
-            <div>
-              <h3 className="text-sm font-medium">{booking.name}</h3>
-              <p className="text-sm text-gray-400">
-                Warehouse Name:{" "}
-                <span className="text-gray-600">{booking.warehouseName}</span>
-              </p>
+      {/* Loader */}
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <ClipLoader color="#4FD1C5" loading={loading} size={50} />
+        </div>
+      ) : error ? (
+        <Message message="Something went Wrong" />
+      ) : bookings.length === 0 ? (
+        <Message message="No booking found" />
+      ) : (
+        <div className="mt-4 space-y-4">
+          {bookings.map((booking) => (
+            <div
+              key={booking._id}
+              className="flex justify-between items-center bg-gray-100 p-4 rounded-md"
+            >
+              {/* Booking Info */}
+              <div>
+                <h3 className="text-sm font-medium">{booking.userName}</h3>
+                <p className="text-sm text-gray-400">
+                  Warehouse Name:{" "}
+                  <span className="text-gray-600">{booking.warehouseName}</span>
+                </p>
+                <p className="text-sm text-gray-400">
+                  Order ID:{" "}
+                  <span className="text-gray-600">{booking.orderId}</span>
+                </p>
+                <p className="text-sm text-gray-400">
+                  Order Status:{" "}
+                  <span className="text-gray-600">{booking.orderStatus}</span>
+                </p>
+              </div>
 
-              <p className="text-sm text-gray-400">
-                Email: <span className="text-gray-600">{booking.email}</span>
-              </p>
-              <p className="text-sm text-gray-400">
-                ID Number:{" "}
-                <span className="text-gray-600">{booking.idNumber}</span>
-              </p>
+              {/* Arrow Icon */}
+              <div className="flex items-center border border-gray-400 p-2 rounded-full">
+                <FontAwesomeIcon
+                  icon={faArrowRight}
+                  className="text-gray-600"
+                  onClick={handleViewAll}
+                />
+              </div>
             </div>
-
-            {/* Arrow Icon */}
-            <div className="flex items-center border border-gray-400 p-2 rounded-full">
-              <FontAwesomeIcon icon={faArrowRight} className="text-gray-600" />
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

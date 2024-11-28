@@ -26,8 +26,15 @@ interface Warehouse {
   phone: string;
   createdAt: string;
   bookings: string;
+  partnerName: string;
+  ratingCount: string;
+  state: string;
+  city: string;
+  pincode: number;
+  address: string;
+  country: string;
+  thumbnail: string;
 }
-
 const Warehouses: React.FC = () => {
   const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(
     null

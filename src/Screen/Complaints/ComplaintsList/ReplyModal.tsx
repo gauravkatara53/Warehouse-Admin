@@ -7,6 +7,26 @@ const ReplyModal = ({
   onMarkAsSolved,
   onMarkAsOnHold,
 }: any) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    };
+    const datePart = date.toLocaleDateString("en-GB", options); // Get the date (day, month, year)
+
+    // Now for the time part (with hour and minute)
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    const timePart = date.toLocaleTimeString("en-GB", timeOptions); // Get the time (hour:minute AM/PM)
+
+    return `${datePart} at ${timePart}`; // Add "at" between date and time
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-50">
       <div className="bg-white p-6 rounded-md shadow-md w-full max-w-lg relative">
@@ -49,7 +69,7 @@ const ReplyModal = ({
         <div className="mb-4">
           <p className="text-sm text-gray-500">Date/Time of Complaint</p>
           <div className="bg-gray-100 p-2 py-4 rounded-md">
-            {complaint.timeOfComplaint || "NA"}
+            {complaint.createdAt ? formatDate(complaint.createdAt) : "NA"}
           </div>
         </div>
 
@@ -64,15 +84,23 @@ const ReplyModal = ({
         {/* Attachments */}
         <div className="mb-4">
           <p className="text-sm text-gray-500">Image</p>
-          {complaint.image ? (
-            <img
-              src={complaint.image}
-              alt="Complaint Attachment"
-              className="w-full h-auto rounded-md"
-            />
-          ) : (
-            <div className="bg-gray-100 p-2 rounded-md">NA</div>
-          )}
+          <a
+            href={complaint.image}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <div className=" rounded border w-20">
+              <img
+                src={
+                  complaint.image ||
+                  "https://img.freepik.com/free-vector/404-error-with-landscape-concept-illustration_114360-7898.jpg"
+                }
+                alt="Image"
+                className="w-20 h-20 object-cover"
+              />
+            </div>
+          </a>
         </div>
 
         {/* Reply Input */}

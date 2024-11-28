@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomButton from "@/Components/Common/button";
-import axios from "axios";
 import KYCVerificationPopup from "@/Screen/Partner/PartnerInfo/KYCVerificationPopup";
 import { ClipLoader } from "react-spinners";
-import Pagination from "@/Components/Common/Pagination/Pagination"; // Import the common Pagination component
+import Pagination from "@/Components/Common/Pagination/Pagination";
+import { toast } from "react-toastify";
+import apiService from "@/Components/APIService/apiService";
+import Message from "@/Components/Common/NotFoundPage/Message";
 
 interface Partner {
   _id: string;
@@ -19,41 +21,48 @@ interface Partner {
 
 const PartnerInfoSection: React.FC = () => {
   const navigate = useNavigate();
-  const [partners, setPartners] = useState<Partner[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allPartner, setAllPartner] = useState<Partner[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const PartnerPerPage = 10;
 
   const handleKYCNavigation = () => {
     navigate("/partners", { state: { initialTab: "kyc" } });
   };
+
   const fetchKYCPartners = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Authentication token is missing.");
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(
-        `https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/kyc/partners`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { limit, page, status: "Pending", search: searchTerm },
-        }
-      );
+      let page = 1;
+      const fetchKYCPartners: Partner[] = [];
+      while (true) {
+        const response = await apiService.get<{
+          success: boolean;
+          data: Partner[];
+          page: number;
+          pages: number;
+          limit: number;
+          total: number;
+        }>(`/admin/kyc/partners?page=${page}&limit=${PartnerPerPage}`);
 
-      const data = response.data;
-      setPartners(data.data);
-      setTotalPages(data.pages);
-    } catch (error) {
+        // Ensure response and data are defined before accessing them
+        if (response && response.success && response.data.length > 0) {
+          fetchKYCPartners.push(...response.data);
+          if (page >= response.pages) break;
+          page++;
+        } else {
+          break; // Exit the loop if no more data
+        }
+      }
+      setAllPartner(fetchKYCPartners);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to fetch data.");
       setError("Failed to fetch data. Please check your authentication.");
     } finally {
       setLoading(false);
@@ -62,7 +71,7 @@ const PartnerInfoSection: React.FC = () => {
 
   useEffect(() => {
     fetchKYCPartners();
-  }, [page, limit, searchTerm]);
+  }, []);
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
@@ -71,8 +80,24 @@ const PartnerInfoSection: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setPage(1);
+    setCurrentPage(1);
   };
+
+  const filteredPartner = allPartner.filter((partner) => {
+    const matchesSearchTerm =
+      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner._id.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearchTerm;
+  });
+
+  const sortedPartner = filteredPartner.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  const paginatedPartner = sortedPartner.slice(
+    (currentPage - 1) * PartnerPerPage,
+    currentPage * PartnerPerPage
+  );
 
   return (
     <div className="p-4 bg-white rounded-lg">
@@ -108,22 +133,20 @@ const PartnerInfoSection: React.FC = () => {
           <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
         </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : partners.length === 0 ? (
-        <p className="text-center pt-2 text-gray-600">
-          No Partner for KYC verification
-        </p>
+        <Message message={error} />
+      ) : sortedPartner.length === 0 ? (
+        <Message message="No Partner for KYC verification" />
       ) : (
         <>
           <ul className="mt-6 space-y-4">
-            {partners.map((partner) => (
+            {paginatedPartner.map((partner) => (
               <li
                 key={partner._id}
-                className="flex justify-between items-center p-4 pl-1 pt-1 border-b border-gray-200"
+                className="flex justify-between items-center p-4 border-b border-gray-200"
               >
                 <div className="flex items-center">
                   <img
-                    src={partner.avatar || "userde.jpg"}
+                    src={partner.avatar || "/path/to/default-avatar.jpg"}
                     alt={partner.name}
                     className="w-8 h-8 rounded-full mr-4"
                   />
@@ -156,11 +179,10 @@ const PartnerInfoSection: React.FC = () => {
             ))}
           </ul>
 
-          {/* Use the Pagination component */}
           <Pagination
-            totalPages={totalPages}
-            currentPage={page}
-            setCurrentPage={setPage}
+            totalPages={Math.ceil(sortedPartner.length / PartnerPerPage)}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
           />
         </>
       )}
@@ -170,11 +192,11 @@ const PartnerInfoSection: React.FC = () => {
           partner={selectedPartner}
           onClose={handleClosePopup}
           onVerify={() => {
-            fetchKYCPartners(); // Refresh data on verification
+            fetchKYCPartners();
             handleClosePopup();
           }}
           onReject={() => {
-            fetchKYCPartners(); // Refresh data on rejection
+            fetchKYCPartners();
             handleClosePopup();
           }}
         />

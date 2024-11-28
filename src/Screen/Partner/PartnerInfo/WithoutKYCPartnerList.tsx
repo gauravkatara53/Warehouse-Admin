@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-
+import Message from "@/Components/Common/NotFoundPage/Message";
 interface Partner {
   _id: string;
   name: string;
@@ -26,7 +26,7 @@ const WithoutKYCPartnerList: React.FC<WithoutKYCPartnerListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const limit = 5; // Limit of 5 items per page
+  const limit = 10; // Limit of 10 items per page
 
   useEffect(() => {
     const fetchPartners = async () => {
@@ -100,7 +100,7 @@ const WithoutKYCPartnerList: React.FC<WithoutKYCPartnerListProps> = ({
   );
 
   if (loading) return <Spinner />;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <Message message="Something went Wrong" />;
 
   return (
     <div>
@@ -115,7 +115,7 @@ const WithoutKYCPartnerList: React.FC<WithoutKYCPartnerListProps> = ({
       </div>
 
       {paginatedPartners.length === 0 ? (
-        <p>No partners found.</p>
+        <Message message="No partners found." />
       ) : (
         paginatedPartners.map((partner) => (
           <div

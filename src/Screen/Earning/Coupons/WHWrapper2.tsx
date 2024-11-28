@@ -56,7 +56,7 @@ const CardWrapper2: React.FC<CardProps> = ({
     >
       {/* Ellipsis Icon Section */}
       <div
-        className="absolute top-4 right-4 cursor-pointer dots-icon" // Positioning for the dots icon
+        className="absolute top-4 right-4 cursor-pointer dots-icon " // Positioning for the dots icon
         onClick={handleDotsClick} // Handle click event
       >
         <FontAwesomeIcon icon={faEllipsisV} className="text-gray-600" />
@@ -70,13 +70,19 @@ const CardWrapper2: React.FC<CardProps> = ({
         >
           <button
             className="block px-4 py-2 text-left text-gray-700 hover:bg-gray-200"
-            onClick={onUpdate}
+            onClick={() => {
+              onUpdate();
+              setShowOptions(false); // Close dropdown after action
+            }}
           >
-            Update
+            Active/Inactive
           </button>
           <button
-            className="block px-4 py-2 text-left text-gray-700 hover:bg-gray-200"
-            onClick={onDelete}
+            className="block px-4 w-full py-2 text-left text-gray-700 hover:bg-gray-200"
+            onClick={() => {
+              onDelete();
+              setShowOptions(false); // Close dropdown after action
+            }}
           >
             Delete
           </button>
@@ -93,7 +99,9 @@ const CardWrapper2: React.FC<CardProps> = ({
       {/* Heading Section */}
       <h2 className="text-md text-gray-700 font-medium mb-1">{heading}</h2>
       {/* Subheading Section */}
-      <p className="text-base text-gray-400 mb-4">{subHeading}</p>
+      <p className="text-base text-gray-400 mb-1 whitespace-nowrap">
+        {subHeading}
+      </p>
       {/* Border Section */}
       <div className="border-t w-28 border-gray-300 mb-2" />
       {/* Bottom Heading Section */}

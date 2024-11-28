@@ -3,6 +3,7 @@ import CustomButton2 from "@/Screen/Partner/PartnerInfo/CustomButton2";
 import ReplyModal from "./ReplyModal";
 import { ClipLoader } from "react-spinners";
 import Pagination from "@/Components/Common/Pagination/Pagination";
+import Message from "@/Components/Common/NotFoundPage/Message";
 const ComplaintsList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("Pending");
   const [complaints, setComplaints] = useState<any[]>([]);
@@ -13,12 +14,14 @@ const ComplaintsList: React.FC = () => {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const complaintsPerPage = 4;
+  const complaintsPerPage = 10;
 
+  // Fetch complaints data based on the active tab
   useEffect(() => {
     fetchComplaints();
   }, [activeTab]);
 
+  // Handle resizing for mobile detection
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -30,6 +33,7 @@ const ComplaintsList: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Function to fetch complaints based on the active tab
   const fetchComplaints = async () => {
     setLoading(true);
     setError(null);
@@ -68,6 +72,35 @@ const ComplaintsList: React.FC = () => {
     }
   };
 
+  // Function to calculate time ago
+  const timeAgo = (createdAt: string): string => {
+    const now = new Date();
+    const createdAtDate = new Date(createdAt);
+    const diffInMs = now.getTime() - createdAtDate.getTime();
+
+    const seconds = Math.floor(diffInMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) {
+      return `${years} year${years > 1 ? "s" : ""} ago`;
+    } else if (months > 0) {
+      return `${months} month${months > 1 ? "s" : ""} ago`;
+    } else if (days > 0) {
+      return `${days} day${days > 1 ? "s" : ""} ago`;
+    } else if (hours > 0) {
+      return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    } else if (minutes > 0) {
+      return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    } else {
+      return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
+    }
+  };
+
+  // Filter complaints based on the search term
   const filteredComplaints = complaints.filter((complaint) =>
     complaint.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -204,13 +237,9 @@ const ComplaintsList: React.FC = () => {
 
   const totalPages = Math.ceil(filteredComplaints.length / complaintsPerPage);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   return (
     <div>
-      <section className="px-3 lg:px-6 py-6 bg-white">
+      <section className="px-3 lg:px-6 py-6 bg-white rounded-md">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-lg lg:text-md font-medium sm:text-xl">
             Complaints
@@ -277,6 +306,12 @@ const ComplaintsList: React.FC = () => {
           <div className="flex justify-center items-center">
             <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
           </div>
+        ) : error ? (
+          <Message message="Something went Wrong" />
+        ) : !error && Object.keys(complaints).length === 0 ? (
+          <Message message="No complaints found" />
+        ) : filteredComplaints.length === 0 ? (
+          <Message message="No complaints found" />
         ) : (
           <div className="mt-4 space-y-4">
             {currentComplaints.map((complaint, index) => (
@@ -302,7 +337,7 @@ const ComplaintsList: React.FC = () => {
                     <p className="text-xs text-gray-400">
                       Time of Complaint:{" "}
                       <span className="text-gray-600">
-                        {complaint.timeOfComplaint || "NA"}
+                        {timeAgo(complaint.createdAt) || "NA"}
                       </span>
                     </p>
                     <p className="text-xs text-gray-400">
@@ -313,20 +348,15 @@ const ComplaintsList: React.FC = () => {
                     </p>
                     <p className="text-xs text-gray-400">
                       Attachments:{" "}
-                      {complaint.attachments ? (
-                        <>
-                          <span className="text-gray-600">
-                            {complaint.attachments}
-                          </span>{" "}
-                          <a
-                            href={complaint.attachments} // Assuming this contains a URL or file path
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-green-600 "
-                          >
-                            view
-                          </a>
-                        </>
+                      {complaint.image ? (
+                        <a
+                          href={complaint.image} // Assuming this contains a URL or file path
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-600 "
+                        >
+                          view
+                        </a>
                       ) : (
                         <span className="text-gray-600">No Attachments</span>
                       )}
@@ -334,6 +364,7 @@ const ComplaintsList: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Action buttons */}
                 {activeTab === "Pending" ? (
                   <div className="flex lg:flex-col items-end space-y-2 mt-2 sm:mt-0 sm:flex-row sm:space-x-2">
                     <button
@@ -367,7 +398,7 @@ const ComplaintsList: React.FC = () => {
                 ) : (
                   <div className="flex lg:flex-col items-end space-y-2 mt-2 sm:mt-0 sm:flex-row sm:space-x-2">
                     <button
-                      className="bg-white text-xs border text-gray-800 px-4 py-2 w-30 sm:w-32 mx-2 sm:mx-0 rounded hover:text-white hover:bg-[#9F8EF2]"
+                      className="bg-white text-xs border text-gray-800 px-4 py-2 w-30 sm:w-32 mx-2 sm:mx-0 rounded hover:text-white hover:bg-[#9F8EF2] whitespace-nowrap"
                       onClick={() => markAsUnsolved(complaint._id)}
                     >
                       Mark as Unsolved
@@ -387,8 +418,8 @@ const ComplaintsList: React.FC = () => {
             setReplyText={setReplyText}
             onClose={closeReplyModal}
             onSendReply={handleSendReply}
-            onMarkAsSolved={() => markAsSolved(replyComplaint._id)} // Pass complaint._id here
-            onMarkAsOnHold={() => markAsOnHold(replyComplaint._id)} // Similarly for "On Hold"
+            onMarkAsSolved={() => markAsSolved(replyComplaint._id)}
+            onMarkAsOnHold={() => markAsOnHold(replyComplaint._id)}
           />
         )}
       </section>

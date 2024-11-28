@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { partners } from "../../../Data/PPPartnerData";
-
+import Message from "@/Components/Common/NotFoundPage/Message";
 interface PremiumPartnerListProps {
   currentPage: number;
   setCurrentPage: (page: number) => void;
@@ -13,14 +13,14 @@ const PremiumPartnerList: React.FC<PremiumPartnerListProps> = ({
   setTotalPages,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const partnersPerPage = 5;
+  const partnersPerPage = 10;
 
   // Filter partners based on search query and premium status
   const filteredPartners = partners.filter(
     (partner) =>
       partner.status === "premium" &&
       (partner.name.toLowerCase().startsWith(searchQuery.toLowerCase()) ||
-        (partner.mobile?.startsWith(searchQuery) ?? false)) // Handle undefined mobile
+        (partner.mobile?.startsWith(searchQuery) ?? false))
   );
 
   // Calculate total pages and inform the parent component
@@ -42,15 +42,15 @@ const PremiumPartnerList: React.FC<PremiumPartnerListProps> = ({
   };
 
   return (
-    <div>
+    <div className="">
       {/* Search Bar */}
       <div className="my-4">
         <input
           type="text"
           value={searchQuery}
           onChange={handleSearchChange}
-          placeholder="Search by name or phone number"
-          className="w-full p-2 border rounded"
+          placeholder="Search premium partners by name or phone number"
+          className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-yellow-500"
         />
       </div>
 
@@ -58,33 +58,36 @@ const PremiumPartnerList: React.FC<PremiumPartnerListProps> = ({
       {displayedPartners.map((partner) => (
         <div
           key={partner.id}
-          className="rounded-lg px-2 my-3 border border-gray-200"
+          className="rounded-lg p-2 mb-4 shadow-md bg-white border border-yellow-300"
         >
-          <div className="rounded-lg p-3 px-0 mb-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-start">
-                <img
-                  src={partner.imageUrl || "userde.jpg"}
-                  alt={partner.name}
-                  className="w-12 h-12 rounded-full bg-gray-200 mr-4"
-                />
-                <div>
-                  <p className="font-medium text-yellow-500">{partner.name}</p>
-                  <p className="text-gray-400">{partner.id}</p>
-                </div>
-              </div>
+          <div className="flex justify-between items-center">
+            {/* Left Section: Profile Image and Name */}
+            <div className="flex items-start">
+              <img
+                src={partner.imageUrl || "userde.jpg"}
+                alt={partner.name}
+                className="w-16 h-16 rounded-full  bg-gray-200 mr-4"
+              />
               <div>
-                <p className="font-semibold text-sm text-yellow-500">
-                  {partner.email}
+                <p className="font-bold text-yellow-600 text-md">
+                  {partner.name}
                 </p>
-                <p className="text-gray-500 text-right">
-                  {partner.mobile || "N/A"}
-                </p>
+                <span className="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-1 rounded-md">
+                  {partner.id}
+                </span>
               </div>
+            </div>
+
+            {/* Right Section: Email and Contact Info */}
+            <div className="text-right">
+              <p className="font-medium text-gray-600">{partner.email}</p>
+              <p className="text-gray-500">{partner.mobile || "N/A"}</p>
             </div>
           </div>
         </div>
       ))}
+
+      {displayedPartners.length === 0 && <Message message="No Partner Found" />}
     </div>
   );
 };

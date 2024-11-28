@@ -7,21 +7,31 @@ import {
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 import "./style.css";
 
 export default function Profile() {
-  const [image, setImage] = useState("userde.jpg");
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState(false); // State to control editing mode
-  const [newName, setNewName] = useState(""); // State to store the new name
+  const [editing, setEditing] = useState(false); // State to control edit mode for all fields
+  const [newName, setNewName] = useState("");
+  const [newMobile, setNewMobile] = useState("");
+  const [newLocation, setNewLocation] = useState("");
+  const [actionLoading, setActionLoading] = useState(false); // Spinner for logout and edit
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const token = localStorage.getItem("token");
+
+        if (!token) {
+          navigate("/signin");
+          return;
+        }
+
         const response = await fetch(
           "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/profile",
           {
@@ -48,20 +58,8 @@ export default function Profile() {
     fetchProfileData();
   }, []);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) {
-          setImage(reader.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleLogout = async () => {
+    setLogoutLoading(true);
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
@@ -87,23 +85,28 @@ export default function Profile() {
     } catch (error) {
       console.error("Logout error:", error);
       alert("An error occurred while logging out.");
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
-  // Handle name edit in the "Personal Information" section
-  const handleEditName = async () => {
+  // Handle saving edited information for all fields
+  const handleEditInfo = async () => {
+    setActionLoading(true);
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
         "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/update-profile",
         {
-          method: "PATCH", // Updated to PATCH
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             name: newName,
+            phone: newMobile,
+            address: newLocation,
           }),
         }
       );
@@ -111,16 +114,23 @@ export default function Profile() {
       if (response.ok) {
         const updatedProfile = {
           ...profileData,
-          data: { ...profileData.data, name: newName },
+          data: {
+            ...profileData.data,
+            name: newName,
+            phone: newMobile,
+            address: newLocation,
+          },
         };
         setProfileData(updatedProfile);
-        setEditingName(false); // Exit edit mode
+        setEditing(false); // Exit edit mode
       } else {
         throw new Error("Failed to update the profile.");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       alert("Failed to update profile.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -132,7 +142,7 @@ export default function Profile() {
         {loading ? (
           <div className="flex justify-center items-center h-96">
             <div className="dot-container">
-              <div className="loading-text">Loading</div>
+              <div className="loading-text -ml-4">Loading</div>
               <div className="flex space-x-2 mr-6">
                 <div className="dot-1 w-6 h-6 bg-gray-600 rounded-full animate-bounce"></div>
                 <div className="dot-2 w-6 h-6 bg-gray-600 rounded-full animate-bounce delay-150"></div>
@@ -146,7 +156,6 @@ export default function Profile() {
           </div>
         ) : (
           <>
-            {/* Background Image */}
             <div className="relative">
               <img
                 src="Breadcrumb.png"
@@ -158,7 +167,7 @@ export default function Profile() {
                 <section className="flex flex-col sm:flex-row justify-between items-center p-4 py-3 bg-white bg-opacity-80 rounded-md shadow-md mx-4 sm:mx-6 px-3 lg:px-8">
                   <div className="relative flex-shrink-0 mb-4 sm:mb-0">
                     <img
-                      src={image}
+                      src={profileData.data.avatar || "userde.jpg"}
                       alt="Profile"
                       className="w-20 h-20 rounded-lg object-cover"
                     />
@@ -168,9 +177,7 @@ export default function Profile() {
                         const fileInput = document.getElementById(
                           "fileInput"
                         ) as HTMLInputElement | null;
-                        if (fileInput) {
-                          fileInput.click();
-                        }
+                        if (fileInput) fileInput.click();
                       }}
                     >
                       <FontAwesomeIcon
@@ -182,7 +189,6 @@ export default function Profile() {
                       id="fileInput"
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
                       className="hidden"
                     />
                   </div>
@@ -197,16 +203,23 @@ export default function Profile() {
                   </div>
 
                   <div className="mt-4 sm:mt-0">
-                    <button
-                      className="group border flex items-center bg-white text-black px-4 py-2 rounded-md hover:bg-[#9F8EF2] hover:text-white"
-                      onClick={handleLogout}
-                    >
-                      <FontAwesomeIcon
-                        icon={faSignOutAlt}
-                        className="mr-2 text-black group-hover:text-white"
-                      />
-                      Logout
-                    </button>
+                    {logoutLoading ? (
+                      <div className="bg-[#9F8EF2] py-2 px-4 rounded ">
+                        <ClipLoader size={20} color={"#FFFFFF"} />
+                      </div>
+                    ) : (
+                      <button
+                        className="group border flex items-center bg-white text-black px-4 py-2 rounded-md hover:bg-[#9F8EF2] hover:text-white"
+                        onClick={handleLogout}
+                        disabled={logoutLoading}
+                      >
+                        <FontAwesomeIcon
+                          icon={faSignOutAlt}
+                          className="mr-2 text-black group-hover:text-white"
+                        />
+                        Logout
+                      </button>
+                    )}
                   </div>
                 </section>
               </div>
@@ -216,10 +229,6 @@ export default function Profile() {
               <div className="flex flex-col w-full lg:w-[55%] space-y-6 flex-shrink-0">
                 <div className="bg-white rounded-md shadow-md p-6 mx-4 sm:mx-6">
                   <h3 className="text-lg font-bold text-gray-800">Role</h3>
-                  {/* <p className="text-sm text-gray-500 mt-2">
-                    This information is used to identify you within the system.
-                    Please ensure all your details are accurate.
-                  </p> */}
                   <div>
                     <span className="text-gray-500">
                       {profileData?.data?.role ?? "NA"}
@@ -234,7 +243,7 @@ export default function Profile() {
                         <span className="font-semibold text-gray-700">
                           Full Name:{" "}
                         </span>
-                        {editingName ? (
+                        {editing ? (
                           <input
                             type="text"
                             value={newName}
@@ -247,21 +256,27 @@ export default function Profile() {
                           </span>
                         )}
                       </div>
-                      {editingName ? (
+                      {editing ? (
                         <button
-                          className=" text-green-500 px-2 py-1 rounded-md"
-                          onClick={handleEditName}
+                          className="text-green-500 px-2 py-1 rounded-md"
+                          onClick={handleEditInfo}
+                          disabled={actionLoading}
                         >
-                          <FontAwesomeIcon icon={faCheck} />{" "}
-                          {/* This adds the tick/check icon */}
+                          {actionLoading ? (
+                            <ClipLoader size={15} color={"#10B981"} />
+                          ) : (
+                            <FontAwesomeIcon icon={faCheck} />
+                          )}
                         </button>
                       ) : (
                         <FontAwesomeIcon
                           icon={faPencilAlt}
                           className="ml-2 text-gray-500 cursor-pointer"
                           onClick={() => {
-                            setEditingName(true);
-                            setNewName(profileData?.data?.name || ""); // Pre-fill with current name
+                            setEditing(true);
+                            setNewName(profileData?.data?.name || "");
+                            setNewMobile(profileData?.data?.phone || "");
+                            setNewLocation(profileData?.data?.address || "");
                           }}
                         />
                       )}
@@ -271,47 +286,38 @@ export default function Profile() {
                       <span className="font-semibold text-gray-700">
                         Mobile:{" "}
                       </span>
-                      <span className="text-gray-500">
-                        {profileData?.data?.mobile ?? "NA"}
-                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newMobile}
+                          onChange={(e) => setNewMobile(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.data?.phone ?? "NA"}
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <span className="font-semibold text-gray-700">
-                        Email:{" "}
-                      </span>
-                      <span className="text-gray-500">
-                        {profileData?.data?.email ?? "NA"}
-                      </span>
-                    </div>
+
                     <div>
                       <span className="font-semibold text-gray-700">
                         Location:{" "}
                       </span>
-                      <span className="text-gray-500">
-                        {profileData?.data?.location ?? "NA"}
-                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newLocation}
+                          onChange={(e) => setNewLocation(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.data?.address ?? "NA"}
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  {/* <div className="mt-6">
-                    <span className="font-semibold text-gray-700">
-                      Social Media:{" "}
-                    </span>
-                    <div className="flex space-x-4 mt-2">
-                      <FontAwesomeIcon
-                        icon={faFacebook}
-                        className="text-blue-600"
-                      />
-                      <FontAwesomeIcon
-                        icon={faTwitter}
-                        className="text-blue-500"
-                      />
-                      <FontAwesomeIcon
-                        icon={faInstagram}
-                        className="text-pink-500"
-                      />
-                    </div>
-                  </div> */}
                 </div>
               </div>
             </div>

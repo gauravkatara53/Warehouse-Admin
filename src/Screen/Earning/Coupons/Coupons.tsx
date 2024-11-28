@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import CustomButton2 from "@/Screen/Partner/PartnerInfo/CustomButton2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWallet, faTimes } from "@fortawesome/free-solid-svg-icons"; // Wallet and close icons
+import { faWallet, faTimes } from "@fortawesome/free-solid-svg-icons";
 import CardWrapper2 from "./WHWrapper2";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { ClipLoader } from "react-spinners";
+import Message from "@/Components/Common/NotFoundPage/Message";
 
 interface Coupon {
   _id: string;
@@ -25,9 +29,14 @@ const Coupons: React.FC = () => {
     heading: "",
     subHeading: "",
     bottomHeading: "",
+    maximumDiscountAmount: "",
+    usageLimit: "",
+    expiryDate: null as Date | null,
   });
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Fetch coupons from the API
+  const [error, setError] = useState<boolean>(false);
+
   const fetchCoupons = async () => {
     try {
       const response = await fetch(
@@ -51,6 +60,9 @@ const Coupons: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch coupons:", error);
+      setError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,23 +74,26 @@ const Coupons: React.FC = () => {
     setNewCoupon({ ...newCoupon, [e.target.name]: e.target.value });
   };
 
-  const handleAddCoupon = async () => {
-    const selectedWarehouses = [
-      "66d6b933743d8652008b646c",
-      "66d6b933743d8652008b646c",
-    ];
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleAddCoupon = async () => {
+    setIsLoading(true); // Start loader
+    const selectedWarehouses = ["66d6b933743d8652008b646c"];
     const uniqueWarehouses = Array.from(new Set(selectedWarehouses));
+
+    const formattedExpiryDate = newCoupon.expiryDate
+      ? newCoupon.expiryDate.toISOString()
+      : null;
 
     const newCouponData = {
       couponCode: newCoupon.heading,
       discountType: "Percentage",
       discountValue: parseInt(newCoupon.bottomHeading),
       minimumPurchaseAmount: parseInt(newCoupon.subHeading),
-      maximumDiscountAmount: 50,
-      expiryDate: "2024-12-31T23:59:59Z",
+      maximumDiscountAmount: parseInt(newCoupon.maximumDiscountAmount),
+      expiryDate: formattedExpiryDate,
       isActive: true,
-      usageLimit: 100,
+      usageLimit: parseInt(newCoupon.usageLimit),
       applicableWarehouses: uniqueWarehouses,
     };
 
@@ -87,38 +102,35 @@ const Coupons: React.FC = () => {
         "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/coupons/create-coupon",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newCouponData),
         }
       );
 
       const data = await response.json();
-      console.log("API Response:", data);
-
       if (data.success) {
         const createdCoupon: Coupon = {
-          _id: data.data?._id || "NA", // Fallback to "NA" if _id is not found
+          _id: data.data?._id || "NA",
           couponCode: newCoupon.heading,
           discountType: "Percentage",
           discountValue: parseInt(newCoupon.bottomHeading),
           minimumPurchaseAmount: parseInt(newCoupon.subHeading),
-          maximumDiscountAmount: 50,
-          expiryDate: "2024-12-31T23:59:59Z",
+          maximumDiscountAmount: parseInt(newCoupon.maximumDiscountAmount),
+          expiryDate: formattedExpiryDate!,
           isActive: true,
-          usageLimit: 100,
+          usageLimit: parseInt(newCoupon.usageLimit),
           applicableWarehouses: uniqueWarehouses,
         };
 
         setActiveCoupons((prevCoupons) => [...prevCoupons, createdCoupon]);
-
-        // Close the modal and reset the new coupon state
         setShowModal(false);
         setNewCoupon({
           heading: "",
           subHeading: "",
           bottomHeading: "",
+          maximumDiscountAmount: "",
+          usageLimit: "",
+          expiryDate: null,
         });
       } else {
         console.error(
@@ -128,10 +140,11 @@ const Coupons: React.FC = () => {
       }
     } catch (error) {
       console.error("Error creating coupon:", error);
+    } finally {
+      setIsLoading(false); // End loader
     }
   };
 
-  // Define your update and delete functions here
   const updateCoupon = async (id: string, updatedIsActive: boolean) => {
     try {
       const response = await fetch(
@@ -141,24 +154,14 @@ const Coupons: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            isActive: updatedIsActive,
-            // Optional fields, include them if necessary:
-            // discountType: "Percentage",
-            // discountValue: 15,
-            // minimumPurchaseAmount: 100,
-            // maximumDiscountAmount: 500,
-            // expiryDate: "2024-12-31",
-            // usageLimit: 5,
-          }),
+          body: JSON.stringify({ isActive: updatedIsActive }),
         }
       );
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data.message); // Output: "Coupon updated successfully"
+        console.log(data.message);
 
-        // Update the local coupons state after successful update
         setActiveCoupons((prevCoupons) =>
           prevCoupons.map((coupon) =>
             coupon._id === id
@@ -181,20 +184,18 @@ const Coupons: React.FC = () => {
           `https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/coupons/delete-coupon/${id}`,
           {
             method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
           }
         );
 
         const data = await response.json();
         console.log("Delete response:", data);
+
         fetchCoupons();
-        // Check if the delete was successful before removing it from state
+
         if (data.success) {
-          // Fetch updated coupons after deleting
-          fetchCoupons(); // Call fetchCoupons to refresh the list
-          console.log("Coupon deleted successfully"); // Log only on success
+          fetchCoupons();
+          console.log("Coupon deleted successfully");
         } else {
           console.error(
             "Failed to delete coupon:",
@@ -207,96 +208,102 @@ const Coupons: React.FC = () => {
     }
   };
 
+  const activeCouponsList = activeCoupons.filter((coupon) => coupon.isActive);
+  const inactiveCouponsList = activeCoupons.filter(
+    (coupon) => !coupon.isActive
+  );
+
   return (
     <section className="px-3 lg:px-6 py-6">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg lg:text-md pb-4 font-medium sm:text-xl">
           Manage Coupons
         </h2>
-        <div>
-          <button
-            className="bg-[#9F8EF2] text-white px-2 text-sm py-1 rounded"
-            onClick={() => setShowModal(true)}
-          >
-            Add New
-          </button>
-        </div>
+        <button
+          className="bg-[#9F8EF2] text-white px-2 text-sm py-1 rounded"
+          onClick={() => setShowModal(true)}
+        >
+          Add New
+        </button>
       </div>
 
       <div className="mb-4">
-        <div className="relative">
-          <div className="flex space-x-4 mb-6">
-            <CustomButton2
-              className={
-                activeTab === "verified"
-                  ? "text-white w-30"
-                  : "border border-gray-300 bg-white w-30"
-              }
-              onClick={() => setActiveTab("verified")}
-            >
-              Active Coupons
-            </CustomButton2>
-            <CustomButton2
-              className={
-                activeTab === "premium"
-                  ? "text-white w-30"
-                  : "border border-gray-300 bg-white w-30"
-              }
-              onClick={() => setActiveTab("premium")}
-            >
-              Inactive Coupons
-            </CustomButton2>
-          </div>
+        <div className="flex space-x-4 mb-6">
+          <CustomButton2
+            className={
+              activeTab === "verified"
+                ? "text-white w-30"
+                : "border border-gray-300 bg-white w-30"
+            }
+            onClick={() => setActiveTab("verified")}
+          >
+            Active Coupons
+          </CustomButton2>
+          <CustomButton2
+            className={
+              activeTab === "premium"
+                ? "text-white w-30"
+                : "border border-gray-300 bg-white w-30"
+            }
+            onClick={() => setActiveTab("premium")}
+          >
+            Inactive Coupons
+          </CustomButton2>
         </div>
       </div>
 
-      <div className="mt-4 space-y-4">
-        {activeTab === "verified" && (
-          <div className="flex flex-col bg-white p-4 rounded-md">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-              {activeCoupons
-                .filter((coupon) => coupon.isActive)
-                .map((coupon) => (
+      {loading ? (
+        <div className="flex justify-center items-center h-20">
+          <ClipLoader color="#9F8EF2" size={50} />
+        </div>
+      ) : error ? (
+        <Message message="Something went wrong" />
+      ) : activeTab === "verified" ? (
+        activeCouponsList.length > 0 ? (
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-col bg-white p-4 rounded-md">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                {activeCouponsList.map((coupon) => (
                   <CardWrapper2
                     key={coupon._id}
                     heading={coupon.couponCode}
-                    subHeading={`Min purchase: $${coupon.minimumPurchaseAmount}`}
+                    subHeading={`Min: ₹${coupon.minimumPurchaseAmount}`}
                     bottomHeading={`${coupon.discountValue}% off`}
                     icon={<FontAwesomeIcon icon={faWallet} />}
-                    className="w-full"
-                    onUpdate={() => updateCoupon(coupon._id, !coupon.isActive)} // Pass update handler
-                    onDelete={() => handleDelete(coupon._id)} // Pass delete handler
+                    onUpdate={() => updateCoupon(coupon._id, false)}
+                    onDelete={() => handleDelete(coupon._id)}
                   />
                 ))}
+              </div>
             </div>
           </div>
-        )}
-
-        {activeTab === "premium" && (
+        ) : (
+          <Message message="No active coupons available" />
+        )
+      ) : inactiveCouponsList.length > 0 ? (
+        <div className="mt-4 space-y-4">
           <div className="flex flex-col bg-white p-4 rounded-md">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-              {activeCoupons
-                .filter((coupon) => !coupon.isActive)
-                .map((coupon) => (
-                  <CardWrapper2
-                    key={coupon._id}
-                    heading={coupon.couponCode}
-                    subHeading={`Min purchase: $${coupon.minimumPurchaseAmount}`}
-                    bottomHeading={`${coupon.discountValue}% off`}
-                    icon={<FontAwesomeIcon icon={faWallet} />}
-                    className="w-full"
-                    onUpdate={() => updateCoupon(coupon._id, !coupon.isActive)} // Pass update handler
-                    onDelete={() => handleDelete(coupon._id)} // Pass delete handler
-                  />
-                ))}
+              {inactiveCouponsList.map((coupon) => (
+                <CardWrapper2
+                  key={coupon._id}
+                  heading={coupon.couponCode}
+                  subHeading={`Min: ₹${coupon.minimumPurchaseAmount}`}
+                  bottomHeading={`${coupon.discountValue}% off`}
+                  icon={<FontAwesomeIcon icon={faWallet} />}
+                  onUpdate={() => updateCoupon(coupon._id, true)}
+                  onDelete={() => handleDelete(coupon._id)}
+                />
+              ))}
             </div>
           </div>
-        )}
-      </div>
-
+        </div>
+      ) : (
+        <Message message="No inactive coupons available" />
+      )}
       {showModal && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-11/12 md:w-1/4 p-6">
+          <div className="bg-white rounded-lg w-11/12 md:w-1/2 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Add Coupon</h3>
               <FontAwesomeIcon
@@ -306,50 +313,120 @@ const Coupons: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block font-medium">Coupon</label>
-                <input
-                  type="text"
-                  name="heading"
-                  value={newCoupon.heading}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded p-2"
-                  placeholder="Coupon Code"
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Minimum Purchase</label>
-                <input
-                  type="text"
-                  name="subHeading"
-                  value={newCoupon.subHeading}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded p-2"
-                  placeholder="Minimum Purchase Amount"
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Discount</label>
-                <input
-                  type="text"
-                  name="bottomHeading"
-                  value={newCoupon.bottomHeading}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded p-2"
-                  placeholder="Discount Percentage"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="heading"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Coupon Code
+                  </label>
+                  <input
+                    type="text"
+                    name="heading"
+                    placeholder="Coupon Code"
+                    value={newCoupon.heading}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="subHeading"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Minimum Purchase Amount
+                  </label>
+                  <input
+                    type="text"
+                    name="subHeading"
+                    placeholder="Minimum Purchase Amount"
+                    value={newCoupon.subHeading}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="bottomHeading"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Discount Percentage
+                  </label>
+                  <input
+                    type="text"
+                    name="bottomHeading"
+                    placeholder="Discount Percentage"
+                    value={newCoupon.bottomHeading}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
               </div>
 
-              <div className="mt-4">
-                <CustomButton2
-                  className="bg-[#9F8EF2] text-white w-full"
-                  onClick={handleAddCoupon}
-                >
-                  Add Coupon
-                </CustomButton2>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="maximumDiscountAmount"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Maximum Discount Amount
+                  </label>
+                  <input
+                    type="text"
+                    name="maximumDiscountAmount"
+                    placeholder="Maximum Discount Amount"
+                    value={newCoupon.maximumDiscountAmount}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="usageLimit"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Usage Limit
+                  </label>
+                  <input
+                    type="text"
+                    name="usageLimit"
+                    placeholder="Usage Limit"
+                    value={newCoupon.usageLimit}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="expiryDate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Expiry Date
+                  </label>
+                  <DatePicker
+                    selected={newCoupon.expiryDate}
+                    onChange={(date: Date | null) =>
+                      setNewCoupon({ ...newCoupon, expiryDate: date })
+                    }
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="Expiry Date"
+                    className="w-[335px] border border-gray-300 px-3 py-2 rounded"
+                  />
+                </div>
               </div>
             </div>
+
+            <button
+              onClick={handleAddCoupon}
+              className={`mt-6 w-full bg-[#9F8EF2] text-white px-4 py-2 rounded-lg flex items-center justify-center ${
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+              disabled={isLoading} // Disable button while loading
+            >
+              {isLoading ? <ClipLoader size={20} color="#FFFFFF" /> : "Add"}
+            </button>
           </div>
         </div>
       )}

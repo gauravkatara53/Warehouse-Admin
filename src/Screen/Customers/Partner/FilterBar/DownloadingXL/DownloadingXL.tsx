@@ -29,14 +29,11 @@ const DownloadingXL: React.FC<DownloadingXLProps> = ({ onClose }) => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const formatDate = (date: Date | null) => {
-    return date
-      ? date.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-      : "Select Date";
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   const downloadExcel = async () => {
@@ -46,8 +43,10 @@ const DownloadingXL: React.FC<DownloadingXLProps> = ({ onClose }) => {
     }
 
     setLoading(true);
-    const formattedStartDate = startDate.toISOString().split("T")[0];
-    const formattedEndDate = endDate.toISOString().split("T")[0];
+    const formattedStartDate = formatLocalDate(startDate);
+    const formattedEndDate = formatLocalDate(endDate);
+    console.log(formattedEndDate);
+    console.log(formattedStartDate);
     const url = `/admin/partner/all-partners?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
 
     try {
@@ -88,7 +87,9 @@ const DownloadingXL: React.FC<DownloadingXLProps> = ({ onClose }) => {
       });
       saveAs(
         blob,
-        `Partners_${formatDate(startDate)}_to_${formatDate(endDate)}.xlsx`
+        `Partners_${formatLocalDate(startDate)}_to_${formatLocalDate(
+          endDate
+        )}.xlsx`
       );
     } catch (error) {
       console.error("Failed to fetch data:", error);
