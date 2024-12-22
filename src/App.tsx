@@ -9,7 +9,7 @@ import Booking from "./Screen/Booking/Booking";
 import Warehouses from "./Screen/Warehouses/Warehouses";
 import Complaints from "./Screen/Complaints/Complaints";
 import Profile from "./Screen/Profile/Profile";
-import SignUp from "./Screen/Auth/SignUp/SignUp";
+// import SignUp from "./Screen/Auth/SignUp/SignUp";
 import Admin from "./Screen/Admin/Admin";
 import NotFoundPage from "./Components/Common/NotFoundPage/NotFoundPage";
 import ExampleComponent from "./Components/APIService/ExampleComponent";
@@ -43,10 +43,10 @@ function App() {
             path="/signin"
             element={isSmallScreen ? <DesktopMessage /> : <SignIn />}
           />
-          <Route
+          {/* <Route
             path="/signup"
             element={isSmallScreen ? <DesktopMessage /> : <SignUp />}
-          />
+          /> */}
           <Route
             path="/"
             element={

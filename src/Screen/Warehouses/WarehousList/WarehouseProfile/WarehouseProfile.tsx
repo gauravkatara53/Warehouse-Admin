@@ -59,7 +59,7 @@ export default function WarehouseProfile({
               onBackClick={onBackClick}
               onSelectReviews={handleViewReviewsClick}
             />
-            <RecentListings />
+            <RecentListings warehouse={warehouse} />
           </>
         ) : (
           <RecentReviews warehouse={warehouse} onBackClick={handleBackClick} />

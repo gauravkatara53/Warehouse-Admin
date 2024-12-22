@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from "react-spinners";
@@ -132,7 +132,7 @@ export default function SignIn() {
                     </div>
                   </form>
 
-                  <p className="text-center text-gray-600">
+                  {/* <p className="text-center text-gray-600">
                     Don't have an account?{" "}
                     <Link
                       to="/signup"
@@ -140,7 +140,7 @@ export default function SignIn() {
                     >
                       Sign Up
                     </Link>
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>

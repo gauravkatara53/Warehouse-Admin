@@ -32,7 +32,7 @@ const PartnerCard = () => {
   useEffect(() => {
     const fetchPartnerStats = async () => {
       const data = await apiService.get<PartnerStatsResponse>(
-        "/admin/partner/statistics"
+        "admin/partner-card/statistics-card"
       );
       if (data && data.success) {
         setPartnerStats(data.data);
