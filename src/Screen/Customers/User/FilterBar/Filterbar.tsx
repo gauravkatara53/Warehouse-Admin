@@ -6,10 +6,14 @@ import {
   faRedo,
   faChevronDown,
   faDownload,
+  faEnvelope,
+  faSms,
+  faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Calendar from "../../../../Components/Customers/Calendar";
 import DownloadingXL from "./DownloadingXL/DownloadingXL";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 interface FilterBarProps {
   selectedDate: string | null;
@@ -125,22 +129,43 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <div className="mt-10 relative">
       <div className="flex items-center rounded-lg text-gray-600">
-        <div className="flex items-center bg-white flex-none w-1/3 rounded-lg p-4 mr-2">
+        <div className="flex items-center bg-white flex-none w-1/8 rounded-md p-2 mr-1">
           <input
             type="text"
-            placeholder="Search by name or number..."
-            className="border-none outline-none flex-1"
+            placeholder="Search"
+            className="border-none outline-none text-sm flex-1 h-10 w-36"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <FontAwesomeIcon icon={faSearch} className="cursor-pointer" />
+          <FontAwesomeIcon
+            icon={faSearch}
+            className="cursor-pointer ml-2 text-sm w-5 h-5"
+          />
         </div>
         <div className="flex items-center rounded-lg  w-full justify-between">
           <div className="flex items-center border border-gray-300 rounded-lg p-4 mr-2 w-full space-x-4 justify-between">
+            <div className=" -mr-4 -ml-2">
+              <FontAwesomeIcon
+                icon={faWhatsapp}
+                className="self-stretch h-4 w-4"
+              />
+              <FontAwesomeIcon
+                icon={faEnvelope}
+                className=" ml-4 self-stretch h-4 w-4"
+              />
+              <FontAwesomeIcon
+                icon={faSms}
+                className=" ml-4  self-stretch h-4 w-4"
+              />
+              <FontAwesomeIcon
+                icon={faBell}
+                className="ml-4 self-stretch h-4 w-4"
+              />
+            </div>
             <div className="flex items-center h-full">
               <FontAwesomeIcon
                 icon={faFilter}
-                className="mr-2 border-r border-gray-300 pr-3 self-stretch"
+                className="mx-2 border-r border-l border-gray-300 px-3 self-stretch"
               />
             </div>
 

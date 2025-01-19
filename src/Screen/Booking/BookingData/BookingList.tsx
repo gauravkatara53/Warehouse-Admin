@@ -20,11 +20,15 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  ); // Track the selected booking ID
   const itemsPerPage = 10;
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -33,6 +37,13 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
         );
         if (response?.data) {
           setBookings(response.data);
+
+          // Automatically select the first booking if available
+          if (response.data.length > 0) {
+            const firstBooking = response.data[0];
+            setSelectedBookingId(firstBooking._id); // Set the first booking as selected
+            onBookingSelect(firstBooking);
+          }
         }
       } catch (error) {
         console.error("Error fetching bookings:", error);
@@ -48,19 +59,16 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
     const matchesSearchTerm = booking.userName
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    const bookingDate = new Date(booking.createdAt); // Assuming bookingDate is in the transaction object if present
+    const bookingDate = new Date(booking.createdAt);
     const isWithinDateRange =
       (!startDate || bookingDate >= startDate) &&
       (!endDate || bookingDate <= endDate);
     return matchesSearchTerm && isWithinDateRange;
   });
 
-  const handleDateSelection = () => {
-    setModalOpen(true);
-  };
-
-  const handleApplyDateRange = () => {
-    setModalOpen(false);
+  const handleBookingClick = (booking: any) => {
+    setSelectedBookingId(booking._id); // Update selected booking ID
+    onBookingSelect(booking); // Call the parent function
   };
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -79,7 +87,7 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
           <div className="flex items-center space-x-2">
             <span
               className="text-gray-500 flex items-center space-x-1 cursor-pointer"
-              onClick={handleDateSelection}
+              onClick={() => setModalOpen(true)}
             >
               <FontAwesomeIcon icon={faCalendarAlt} className="text-gray-500" />
               <span>
@@ -115,7 +123,7 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
           </div>
         ) : error ? (
           <Message message="Something went Wrong" />
-        ) : !error && Object.keys(bookings).length === 0 ? (
+        ) : !error && bookings.length === 0 ? (
           <Message message="No transactions available." />
         ) : filteredBookings.length === 0 ? (
           <Message message="No Booking found" />
@@ -124,7 +132,12 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
             {currentBookings.map((booking) => (
               <div
                 key={booking._id}
-                className="flex justify-between items-center bg-gray-100 p-4 rounded-md"
+                className={`flex justify-between items-center p-4 rounded-md cursor-pointer ${
+                  booking._id === selectedBookingId
+                    ? "bg-gray-50 border border-[#4FD1C5]"
+                    : "bg-gray-100"
+                }`}
+                onClick={() => handleBookingClick(booking)}
               >
                 <div>
                   <h3 className="text-sm font-medium">{booking.userName}</h3>
@@ -143,10 +156,7 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
                     <span className="text-gray-600">{booking.orderStatus}</span>
                   </p>
                 </div>
-                <div
-                  className="flex items-center border border-gray-400 p-2 rounded-full cursor-pointer"
-                  onClick={() => onBookingSelect(booking)}
-                >
+                <div className="flex items-center border border-gray-400 p-2 rounded-full">
                   <FontAwesomeIcon
                     icon={faArrowRight}
                     className="text-gray-600"
@@ -171,7 +181,7 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
         endDate={endDate}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
-        onApply={handleApplyDateRange}
+        onApply={() => setModalOpen(false)}
       />
     </div>
   );

@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import KYCVerificationPopup from "./KYCVerificationPopup";
 import { ClipLoader } from "react-spinners";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell } from "@fortawesome/free-solid-svg-icons";
 import Message from "@/Components/Common/NotFoundPage/Message";
 import apiService from "@/Components/APIService/apiService";
-
-interface KYCVerificationListProps {
-  currentPage: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-  setTotalPages: React.Dispatch<React.SetStateAction<number>>;
-}
 
 interface Partner {
   _id: string;
@@ -20,18 +17,24 @@ interface Partner {
   avatar?: string;
 }
 
+interface KYCVerificationListProps {
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  setTotalPages: React.Dispatch<React.SetStateAction<number>>;
+}
+
 const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
   currentPage,
   setCurrentPage,
   setTotalPages,
 }) => {
+  const navigate = useNavigate();
   const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
   const PARTNERS_PER_PAGE = 10;
 
   const fetchKYCPartners = async () => {
@@ -39,34 +42,52 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
     setError(null);
 
     try {
-      let page = 1;
-      const fetchedPartners: Partner[] = [];
-      while (true) {
-        const response = await apiService.get<{
-          success: boolean;
-          data: Partner[];
-          page: number;
-          pages: number;
-          limit: number;
-          total: number;
-        }>(`/admin/kyc/partners?page=${page}&limit=${PARTNERS_PER_PAGE}`);
+      const response = await apiService.get<{
+        success: boolean;
+        data: {
+          partners: Partner[];
+          totalPages: number;
+        };
+      }>(
+        `/partner/all-partner?kycStatus=Processing&page=${currentPage}&limit=${PARTNERS_PER_PAGE}&search=${searchTerm}`
+      );
 
-        if (response?.success && response.data?.length > 0) {
-          fetchedPartners.push(...response.data);
-          if (page >= response.pages) break;
-          page++;
-        } else {
-          break;
-        }
+      if (response?.success) {
+        const { partners, totalPages } = response.data;
+        setAllPartners(partners);
+        setTotalPages(totalPages);
+      } else {
+        setError("Failed to fetch data. Please check your authentication.");
       }
-      setAllPartners(fetchedPartners);
-      setTotalPages(Math.ceil(fetchedPartners.length / PARTNERS_PER_PAGE));
     } catch (err) {
       setError("Failed to fetch data. Please check your authentication.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchKYCPartners();
+  }, [currentPage, searchTerm]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search term change
+  };
+
+  const handlePartnerClick = (partnerId: string) => {
+    if (partnerId) {
+      navigate(`/partner-profile/${partnerId}`);
+    } else {
+      alert("Partner document ID is missing.");
+    }
+  };
+
+  const Spinner = () => (
+    <div className="flex justify-center items-center mt-4">
+      <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
+    </div>
+  );
 
   const handleViewAndVerify = (partner: Partner) => {
     setSelectedPartner(partner);
@@ -77,31 +98,6 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
     setIsPopupOpen(false);
     setSelectedPartner(null);
   };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const filteredPartners = allPartners.filter(
-    (partner) =>
-      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.phone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedPartners = filteredPartners.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-
-  const paginatedPartners = sortedPartners.slice(
-    (currentPage - 1) * PARTNERS_PER_PAGE,
-    currentPage * PARTNERS_PER_PAGE
-  );
-
-  useEffect(() => {
-    fetchKYCPartners();
-  }, []);
 
   return (
     <div>
@@ -116,42 +112,51 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center">
-          <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
-        </div>
+        <Spinner />
       ) : error ? (
         <Message message={error} />
-      ) : error ? (
-        <Message message={error} />
-      ) : sortedPartners.length === 0 ? (
+      ) : allPartners.length === 0 ? (
         <Message message="No Partner for KYC verification" />
       ) : (
-        paginatedPartners.map((partner) => (
-          <div key={partner._id} className="rounded-lg border p-4 mb-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <img
-                  src={partner.avatar || "/default-avatar.jpg"}
-                  alt={partner.name}
-                  className="w-12 h-12 rounded-full bg-gray-200 mr-4"
-                />
-                <div>
-                  <p className="font-medium">{partner.name}</p>
-                  <p className="text-gray-400">{partner._id}</p>
+        <>
+          {allPartners.map((partner) => (
+            <div
+              key={partner._id}
+              className="rounded-lg p-4 mb-4 border border-gray-200 hover:cursor-pointer"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div
+                  className="flex items-start"
+                  onClick={() => handlePartnerClick(partner._id)}
+                >
+                  <img
+                    src={partner.avatar || "userde.jpg"}
+                    alt={partner.name}
+                    className="w-12 h-12 rounded-full bg-gray-200 mr-4"
+                  />
+                  <div className="mt-2">
+                    <p className="font-medium text-gray-900">{partner.name}</p>
+                  </div>
+                </div>
+                <div className="mt-2 sm:mt-0 flex flex-col items-center sm:items-end sm:ml-4">
+                  <div className="flex items-center">
+                    <div className="flex flex-col items-end">
+                      <p className="font-semibold text-sm text-gray-900 text-center sm:text-left">
+                        {partner.phone}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    className="mt-2 text-green-500"
+                    onClick={() => handleViewAndVerify(partner)}
+                  >
+                    View and Verify
+                  </button>
                 </div>
               </div>
-              <div className="flex flex-col items-end">
-                <button
-                  className="text-green-500"
-                  onClick={() => handleViewAndVerify(partner)}
-                >
-                  View and Verify
-                </button>
-                <p className="text-gray-400">{partner.phone}</p>
-              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </>
       )}
 
       {isPopupOpen && selectedPartner && (

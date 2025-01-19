@@ -1,9 +1,8 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
-
+import Cookies from "js-cookie";
 // Define the base API instance
 const api = axios.create({
-  baseURL:
-    "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1", // API base URL
+  baseURL: "http://localhost:5001/api/v1", // API base URL
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,9 +12,8 @@ const api = axios.create({
 // Automatically attach the token to all outgoing requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("accessToken");
     if (token) {
-      // Use the `set` method to properly add the Authorization header
       config.headers.set("Authorization", `Bearer ${token}`);
     }
     return config;

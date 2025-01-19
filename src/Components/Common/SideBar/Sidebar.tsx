@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useLocation, useNavigate } from "react-router-dom";
 import { tabs } from "./SideBarTab"; // Import the tabs data
-import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons"; // Import the icons
 
 export default function Sidebar() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed for mobile
   const [hoveredTab, setHoveredTab] = useState<string | null>(null); // State to track hovered tab
+  const [isScrollable, setIsScrollable] = useState(false); // State to track if sidebar should be scrollable
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(location.pathname);
@@ -21,67 +20,42 @@ export default function Sidebar() {
     }
   }, [activeTab, navigate, location.pathname]);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  useEffect(() => {
+    const checkScrollable = () => {
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar) {
+        setIsScrollable(sidebar.scrollHeight > sidebar.clientHeight);
+      }
+    };
+
+    checkScrollable();
+    window.addEventListener("resize", checkScrollable);
+    return () => window.removeEventListener("resize", checkScrollable);
+  }, []);
 
   const handleTabClick = (path: string) => {
     if (path !== activeTab) {
       setActiveTab(path);
     }
-    // Close the sidebar on mobile after clicking a tab
-    if (window.innerWidth <= 768) {
-      setIsSidebarOpen(false);
-    }
   };
 
   return (
     <div className="flex">
-      {/* Mobile Top Bar */}
-      <div
-        className={`md:hidden flex justify-between items-center bg-gray-100 p-4 fixed top-0 left-0 right-0 z-50 ${
-          isSidebarOpen ? "hidden" : "flex"
-        }`}
-      >
-        <span className="text-gray-700 font-bold">
-          {tabs.find((tab) => tab.path === activeTab)?.label || "Menu"}
-        </span>
-        <button
-          onClick={toggleSidebar}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <FontAwesomeIcon icon={faBars} className="h-6 w-6" />
-        </button>
-      </div>
-
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full bg-gray-100 transform transition-transform ${
-          isSidebarOpen ? "translate-x-0 w-screen" : "-translate-x-full"
-        } md:translate-x-0 z-40`}
-        style={{
-          height: "100vh",
-          overflowY: isSidebarOpen ? "auto" : "hidden",
-        }}
+        id="sidebar"
+        className={`fixed top-0 left-0 h-full bg-gray-100 w-60 z-40 ${
+          isScrollable ? "overflow-y-auto" : "overflow-hidden"
+        } max-h-screen`}
       >
-        {/* Close Button for Mobile */}
-        {isSidebarOpen && (
-          <button
-            onClick={toggleSidebar}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 md:hidden"
-          >
-            <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
-          </button>
-        )}
-
         {/* Logo Section */}
         <div className="flex items-center justify-start p-3 pb-1 pt-6">
-          <img src={"logo1.png"} alt="Logo" className="h-10 w-auto" />
+          <img src={"/logo1.png"} alt="Logo" className="h-10 w-auto" />
         </div>
         <div className="mx-4 h-1 border-b border-gray-600 opacity-10"></div>
 
         {/* Tabs */}
-        <div className="flex-grow pl-4 pb-14 md:pb-0">
+        <div className="flex-grow pl-4 pb-14">
           <ul className="mt-3">
             {tabs.map((tab) => (
               <li
@@ -124,12 +98,12 @@ export default function Sidebar() {
         </div>
 
         {/* Help Section */}
-        <div className="-mt-12 md:mt-3 lg:mt-1 relative flex justify-center items-center  mb-0">
-          <div className="p-2 max-w-sm w-full ">
+        <div className="relative flex justify-center items-center -mt-12 mb-0">
+          <div className="p-2 max-w-sm w-full">
             <div
               className="rounded-lg bg-cover bg-center p-2 text-left py-4"
               style={{
-                backgroundImage: `url('Background-s.png')`,
+                backgroundImage: `url('/Background-s.png')`,
               }}
             >
               <h4 className="text-md font-bold text-white mb-1">Need help?</h4>
@@ -145,7 +119,7 @@ export default function Sidebar() {
       </div>
 
       {/* Page Content */}
-      <div className="flex-grow ml-60 overflow-y-auto pt-16 md:pt-0">
+      <div className="flex-grow ml-60 overflow-y-auto pt-16">
         {/* Your page content goes here */}
       </div>
     </div>

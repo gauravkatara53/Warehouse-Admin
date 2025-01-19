@@ -68,7 +68,7 @@ const RecentListings = ({ warehouse }: RecentListingsProps) => {
   }, [warehouse._id, page]);
 
   return (
-    <div className="relative overflow-hidden -mt-80">
+    <div className="relative overflow-hidden ">
       {error && <div className="error-message">{error}</div>}
       <div className="relative overflow-x-auto my-4">
         <h1 className="text-3xl font-semibold text-gray-700 mb-4">

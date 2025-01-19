@@ -5,6 +5,9 @@ import Pagination from "../../../../Components/Common/Pagination/Pagination";
 import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
 import Message from "@/Components/Common/NotFoundPage/Message";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { faBell, faEnvelope, faSms } from "@fortawesome/free-solid-svg-icons";
 
 interface Partner {
   _id: string;
@@ -147,6 +150,15 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
 
     return sortedUsers;
   };
+  const [selectedPartners, setSelectedPartners] = useState<string[]>([]);
+
+  const toggleSelection = (id: string) => {
+    setSelectedPartners((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((partnerId) => partnerId !== id)
+        : [...prevSelected, id]
+    );
+  };
 
   const sortedUsers = sortFilteredUsers(filteredUsers);
   const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
@@ -194,6 +206,9 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                 <th scope="col" className="px-6 py-3">
                   DATE
                 </th>
+                <th scope="col" className="px-6 py-3">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -215,36 +230,86 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                 paginatedPartner.map((partner) => (
                   <tr
                     key={partner._id}
-                    onClick={() => onSelectPartner(partner)}
                     className="bg-white border-b cursor-pointer"
                   >
                     <th
                       scope="row"
                       className="px-6 py-4 font-medium whitespace-nowrap"
                     >
-                      {/* Calculate the ID based on the user's original position in allUsers */}
-                      {allPartners.findIndex((u) => u._id === partner._id) + 1}
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={selectedPartners.includes(partner._id)}
+                          onChange={() => toggleSelection(partner._id)}
+                        />
+                        <span>
+                          {allPartners.findIndex((u) => u._id === partner._id) +
+                            1}
+                        </span>
+                      </div>
                     </th>
 
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap "
+                      onClick={() => onSelectPartner(partner)}
+                    >
                       {partner.name || "N/A"}
                     </td>
-                    <td className="px-6 py-4 ">{partner.address || "N/A"}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 max-w-[190px] truncate overflow-hidden whitespace-nowrap"
+                      onClick={() => onSelectPartner(partner)}
+                    >
+                      {partner.address || "N/A"}
+                    </td>
+
+                    <td
+                      className="px-6 py-4 whitespace-nowrap"
+                      onClick={() => onSelectPartner(partner)}
+                    >
                       {partner.phone || "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap"
+                      onClick={() => onSelectPartner(partner)}
+                    >
                       {partner.membershipStatus || "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap"
+                      onClick={() => onSelectPartner(partner)}
+                    >
                       {isValidKYCStatus(partner.kycStatus) ? (
                         <StatusTag status={partner.kycStatus} />
                       ) : (
                         "N/A"
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td
+                      className="px-6 py-4 whitespace-nowrap"
+                      onClick={() => onSelectPartner(partner)}
+                    >
                       {partner.date || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className=" -mr-4 -ml-2">
+                        <FontAwesomeIcon
+                          icon={faWhatsapp}
+                          className="self-stretch h-4 w-4 ho"
+                        />
+                        <FontAwesomeIcon
+                          icon={faEnvelope}
+                          className=" ml-2 self-stretch h-4 w-4"
+                        />
+                        <FontAwesomeIcon
+                          icon={faSms}
+                          className=" ml-2  self-stretch h-4 w-4"
+                        />
+                        <FontAwesomeIcon
+                          icon={faBell}
+                          className="ml-2 self-stretch h-4 w-4"
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))

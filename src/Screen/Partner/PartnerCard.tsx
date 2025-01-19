@@ -22,16 +22,19 @@ const PartnerCard = () => {
 
   useEffect(() => {
     const fetchPartnerStats = async () => {
-      const data = await apiService.get<WarehouseStatsResponse>(
-        "/admin/getCardStatistics"
-      );
-      if (data && data.success && data.data.length > 0) {
-        const stats = data.data[0]; // Access the first object in the data array
-        setPartnerStats({
-          totalPartners: stats.totalPartners,
-          activePartners: stats.activePartners,
-        });
-        setDataFetched(true); // Trigger animation after data fetch
+      try {
+        const response = await apiService.get<WarehouseStatsResponse>(
+          "/admin/partner/Static"
+        );
+        if (response && response.success && response.data) {
+          setPartnerStats({
+            totalPartners: response.data.totalPartners,
+            activePartners: response.data.activePartner, // Note the corrected field name
+          });
+          setDataFetched(true); // Trigger animation after data fetch
+        }
+      } catch (error) {
+        console.error("Error fetching partner stats:", error);
       }
     };
 

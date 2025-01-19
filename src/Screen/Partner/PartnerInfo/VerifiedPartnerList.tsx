@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
@@ -7,6 +8,7 @@ import apiService from "@/Components/APIService/apiService";
 
 interface Partner {
   _id: string;
+  partnerDocId: string;
   name: string;
   email: string;
   phone: string;
@@ -25,6 +27,7 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
   setCurrentPage,
   setTotalPages,
 }) => {
+  const navigate = useNavigate();
   const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,30 +39,26 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
     setError(null);
 
     try {
-      let page = 1;
-      const fetchedPartners: Partner[] = [];
-      while (true) {
-        const response = await apiService.get<{
-          success: boolean;
-          data: Partner[];
-          page: number;
-          pages: number;
+      const response = await apiService.get<{
+        success: boolean;
+        data: {
+          partners: Partner[];
+          totalPartners: number;
+          currentPage: number;
           limit: number;
-          total: number;
-        }>(
-          `/admin/kyc/partners?status=Verified&page=${page}&limit=${PARTNERS_PER_PAGE}`
-        );
+          totalPages: number;
+        };
+      }>(
+        `/partner/all-partner?kycStatus=Verified&page=${currentPage}&limit=${PARTNERS_PER_PAGE}&search=${searchTerm}&sortBy=createdAt&sortOrder=desc`
+      );
 
-        if (response?.success && response.data?.length > 0) {
-          fetchedPartners.push(...response.data);
-          if (page >= response.pages) break;
-          page++;
-        } else {
-          break;
-        }
+      if (response?.success) {
+        const { partners, totalPages } = response.data;
+        setAllPartners(partners);
+        setTotalPages(totalPages);
+      } else {
+        setError("Failed to fetch data. Please check your authentication.");
       }
-      setAllPartners(fetchedPartners);
-      setTotalPages(Math.ceil(fetchedPartners.length / PARTNERS_PER_PAGE));
     } catch (err) {
       setError("Failed to fetch data. Please check your authentication.");
     } finally {
@@ -69,27 +68,20 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
 
   useEffect(() => {
     fetchVerifiedPartners();
-  }, []);
+  }, [currentPage, searchTerm]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on search term change
   };
-  const filteredPartners = allPartners.filter(
-    (partner) =>
-      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.phone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
-  const sortedPartners = filteredPartners.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-
-  const paginatedPartners = sortedPartners.slice(
-    (currentPage - 1) * PARTNERS_PER_PAGE,
-    currentPage * PARTNERS_PER_PAGE
-  );
+  const handlePartnerClick = (partnerId: string) => {
+    if (partnerId) {
+      navigate(`/partner-profile/${partnerId}`);
+    } else {
+      alert("Partner document ID is missing.");
+    }
+  };
 
   const Spinner = () => (
     <div className="flex justify-center items-center mt-4">
@@ -112,15 +104,16 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
       {loading ? (
         <Spinner />
       ) : error ? (
-        <Message message="Something went Wrong" />
-      ) : sortedPartners.length === 0 ? (
-        <Message message="No Patrner Found." />
+        <Message message="Something went wrong" />
+      ) : allPartners.length === 0 ? (
+        <Message message="No Partner Found." />
       ) : (
         <>
-          {paginatedPartners.map((partner) => (
+          {allPartners.map((partner) => (
             <div
               key={partner._id}
-              className="rounded-lg p-4 mb-4 border border-gray-200"
+              className="rounded-lg p-4 mb-4 border border-gray-200 hover:cursor-pointer"
+              onClick={() => handlePartnerClick(partner._id)}
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div className="flex items-start">
@@ -129,9 +122,8 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
                     alt={partner.name}
                     className="w-12 h-12 rounded-full bg-gray-200 mr-4"
                   />
-                  <div className="flex-1">
+                  <div className="mt-2">
                     <p className="font-medium text-gray-900">{partner.name}</p>
-                    <p className="text-gray-400">{partner._id}</p>
                   </div>
                 </div>
                 <div className="mt-2 sm:mt-0 flex flex-col items-center sm:items-end sm:ml-4">

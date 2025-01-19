@@ -5,7 +5,7 @@ import PartnerCard from "./PartnerCard";
 
 export default function Partner() {
   return (
-    <div className="flex flex-wrap lg:flex-nowrap overflow-hidden ">
+    <div className="flex flex-wrap lg:flex-nowrap overflow-hidden  ">
       {/* Sidebar */}
       <Sidebar />
 

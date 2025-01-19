@@ -5,6 +5,9 @@ import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
 import ClipLoader from "react-spinners/ClipLoader";
 import Message from "@/Components/Common/NotFoundPage/Message";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { faBell, faEnvelope, faSms } from "@fortawesome/free-solid-svg-icons";
 interface User {
   _id: string;
   name: string;
@@ -135,6 +138,14 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
     (currentPage - 1) * usersPerPage,
     currentPage * usersPerPage
   );
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const toggleSelection = (id: string) => {
+    setSelectedUsers((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((userId) => userId !== id)
+        : [...prevSelected, id]
+    );
+  };
 
   return (
     <div>
@@ -173,6 +184,9 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
               <th scope="col" className="px-6 py-3 whitespace-nowrap">
                 DATE
               </th>
+              <th scope="col" className="px-6 py-3">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -192,37 +206,83 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
               </td>
             ) : (
               paginatedUsers.map((user) => (
-                <tr
-                  key={user._id}
-                  onClick={() => onSelectUser(user)}
-                  className="bg-white border-b cursor-pointer"
-                >
+                <tr key={user._id} className="bg-white border-b cursor-pointer">
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium whitespace-nowrap"
                   >
                     {/* Calculate the ID based on the user's original position in allUsers */}
-                    {allUsers.findIndex((u) => u._id === user._id) + 1}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={selectedUsers.includes(user._id)}
+                        onChange={() => toggleSelection(user._id)}
+                      />
+                      <span>
+                        {allUsers.findIndex((u) => u._id === user._id) + 1}
+                      </span>
+                    </div>
                   </th>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td
+                    className="px-6 py-4 whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
                     {user.name || "N/A"}
                   </td>
-                  <td className="px-6 py-4">{user.address || "N/A"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td
+                    className="px-6 py-4 max-w-[190px] truncate overflow-hidden whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
+                    {user.address || "N/A"}
+                  </td>
+                  <td
+                    className="px-6 py-4 whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
                     {user.phone || "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td
+                    className="px-6 py-4 whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
                     {user.email || "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td
+                    className="px-6 py-4 whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
                     <StatusTag
                       status={
                         user.profileStatus as "completed" | "Not completed"
                       }
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td
+                    className="px-6 py-4 whitespace-nowrap"
+                    onClick={() => onSelectUser(user)}
+                  >
                     {user.date || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className=" -mr-4 -ml-2">
+                      <FontAwesomeIcon
+                        icon={faWhatsapp}
+                        className="self-stretch h-4 w-4 ho"
+                      />
+                      <FontAwesomeIcon
+                        icon={faEnvelope}
+                        className=" ml-2 self-stretch h-4 w-4"
+                      />
+                      <FontAwesomeIcon
+                        icon={faSms}
+                        className=" ml-2  self-stretch h-4 w-4"
+                      />
+                      <FontAwesomeIcon
+                        icon={faBell}
+                        className="ml-2 self-stretch h-4 w-4"
+                      />
+                    </div>
                   </td>
                 </tr>
               ))

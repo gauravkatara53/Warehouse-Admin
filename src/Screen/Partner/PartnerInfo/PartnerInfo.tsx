@@ -32,16 +32,7 @@ const PartnerInformation: React.FC = () => {
           >
             Verified Partner
           </CustomButton2>
-          <CustomButton2
-            className={
-              activeTab === "premium"
-                ? "text-white"
-                : "border border-gray-300 bg-white"
-            }
-            onClick={() => setActiveTab("premium")}
-          >
-            Premium Partner
-          </CustomButton2>
+
           <CustomButton2
             className={
               activeTab === "kyc"

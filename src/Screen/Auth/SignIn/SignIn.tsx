@@ -4,6 +4,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from "react-spinners";
 import apiService from "@/Components/APIService/apiService";
+import { Link } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export default function SignIn() {
   const [email, setEmail] = useState<string>("");
@@ -24,16 +26,56 @@ export default function SignIn() {
 
     try {
       const response = await apiService.post<{
-        token: string;
-        admin: { id: string };
+        data: {
+          admin: {
+            admin: {
+              _id: string;
+              name: string;
+              email: string;
+              phone: string;
+              avatar: string;
+              role: string;
+              isVerified: boolean;
+            };
+            accessToken: string;
+            refreshToken: string;
+          };
+        };
+        message: string;
+        success: boolean;
       }>("/admin/login", {
         email: email,
         password: password,
       });
 
-      if (response?.token) {
-        localStorage.setItem("token", response.token);
-        localStorage.setItem("id", response.admin.id);
+      if (response?.data?.admin?.accessToken) {
+        const { admin, accessToken } = response.data.admin;
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("id", admin._id);
+        localStorage.setItem("name", admin.name);
+        localStorage.setItem("role", admin.role);
+        toast.success(response.message || "Login successful!");
+        navigate("/"); // Redirect to dashboard or home
+      }
+      if (response?.data?.admin?.accessToken) {
+        const { admin, accessToken, refreshToken } = response.data.admin;
+
+        // Store tokens in cookies
+        Cookies.set("accessToken", accessToken, {
+          secure: true,
+          sameSite: "Strict",
+        });
+        Cookies.set("refreshToken", refreshToken, {
+          secure: true,
+          sameSite: "Strict",
+        });
+
+        // Store other user data
+        Cookies.set("id", admin._id, { secure: true, sameSite: "Strict" });
+        Cookies.set("name", admin.name, { secure: true, sameSite: "Strict" });
+        Cookies.set("role", admin.role, { secure: true, sameSite: "Strict" });
+
+        toast.success(response.message || "Login successful!");
         navigate("/"); // Redirect to dashboard or home
       }
     } catch (err: any) {
@@ -43,7 +85,7 @@ export default function SignIn() {
       } else if (err.message === "Incorrect password") {
         toast.error("Incorrect password. Please try again.");
       } else {
-        toast.error("Something went wrong");
+        toast.error("Something went wrong. Please try again later.");
       }
     } finally {
       setLoading(false);
@@ -132,7 +174,7 @@ export default function SignIn() {
                     </div>
                   </form>
 
-                  {/* <p className="text-center text-gray-600">
+                  <p className="text-center text-gray-600">
                     Don't have an account?{" "}
                     <Link
                       to="/signup"
@@ -140,7 +182,7 @@ export default function SignIn() {
                     >
                       Sign Up
                     </Link>
-                  </p> */}
+                  </p>
                 </div>
               </div>
             </div>

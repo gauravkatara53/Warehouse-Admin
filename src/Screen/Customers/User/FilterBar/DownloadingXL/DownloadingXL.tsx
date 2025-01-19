@@ -10,20 +10,6 @@ interface DownloadingXLProps {
   onClose: () => void;
 }
 
-interface User {
-  _id: string;
-  name: string;
-  address?: string;
-  phone: string;
-  email: string;
-  profileStatus: string;
-  createdAt: string;
-}
-
-interface ApiResponse {
-  data: User[];
-}
-
 const DownloadingXL: React.FC<DownloadingXLProps> = ({ onClose }) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -43,54 +29,48 @@ const DownloadingXL: React.FC<DownloadingXLProps> = ({ onClose }) => {
     }
 
     setLoading(true);
-    const formattedStartDate = formatLocalDate(startDate);
-    const formattedEndDate = formatLocalDate(endDate);
 
-    const url = `/admin/users/all-users?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+    // Format startDate and increment endDate by 1 day
+    const formattedStartDate = formatLocalDate(startDate);
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+    const formattedEndDate = formatLocalDate(adjustedEndDate);
+
+    const url = `/download/user-list?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
 
     try {
-      const UserResponse = await apiService.get<ApiResponse>(url);
-      if (!UserResponse || !UserResponse.data) {
+      // Fetch the response from the API
+      const response = await apiService.get<string>(url); // Assuming the API returns CSV-like data
+      if (!response) {
         alert("Failed to fetch data. Please try again.");
         return;
       }
 
+      // Initialize ExcelJS workbook and worksheet
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Users");
 
-      worksheet.columns = [
-        { header: "ID", key: "id", width: 24 },
-        { header: "Name", key: "name", width: 32 },
-        { header: "Address", key: "address", width: 48 },
-        { header: "Number", key: "phone", width: 20 },
-        { header: "Email Id", key: "email", width: 15 },
-        { header: "Profile Status", key: "profileStatus", width: 15 },
-        { header: "Date", key: "createdAt", width: 20 },
-      ];
+      // Parse the response into rows (assumes CSV-like format)
+      const rows = response.split("\n").map((line) => line.split(","));
 
-      UserResponse.data.forEach((user: User) => {
-        worksheet.addRow({
-          id: user._id,
-          name: user.name || "N/A",
-          address: user.address || "N/A",
-          phone: user.phone || "N/A",
-          email: user.email || "N/A",
-          profileStatus: user.profileStatus || "Unknown",
-          createdAt:
-            new Date(user.createdAt).toLocaleDateString("en-GB") || "N/A",
+      // Dynamically set headers and add rows to the worksheet
+      if (rows.length > 0) {
+        worksheet.columns = rows[0].map((header) => ({
+          header,
+          key: header,
+          width: 20,
+        }));
+        rows.slice(1).forEach((row) => {
+          worksheet.addRow(row);
         });
-      });
+      }
 
+      // Write to Excel buffer and save the file
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(
-        blob,
-        `Users_${formatLocalDate(startDate)}_to_${formatLocalDate(
-          endDate
-        )}.xlsx`
-      );
+      saveAs(blob, `Users_${formattedStartDate}_to_${formattedEndDate}.xlsx`);
     } catch (error) {
       console.error("Failed to fetch data:", error);
       alert("Failed to download data. Please try again.");

@@ -46,6 +46,16 @@ export const tabs: Tab[] = [
     label: "Partner",
   },
   {
+    path: "/customers",
+    icon: faUserTag,
+    label: "Customers",
+  },
+  {
+    path: "/approve-admins",
+    icon: faKey,
+    label: "Approve Admins",
+  },
+  {
     path: "/complaints",
     icon: faExclamationCircle, // Replace with appropriate icon
     label: "Complaints",
@@ -54,15 +64,5 @@ export const tabs: Tab[] = [
     path: "/profile",
     icon: faUser,
     label: "Profile",
-  },
-  {
-    path: "/approve-admins",
-    icon: faKey,
-    label: "Approve Admins",
-  },
-  {
-    path: "/customers",
-    icon: faUserTag,
-    label: "Customers",
   },
 ];

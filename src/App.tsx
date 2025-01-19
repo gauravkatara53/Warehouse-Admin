@@ -17,6 +17,7 @@ import Customers from "./Screen/Customers/Customers";
 import Partner from "./Screen/Partner/Partner";
 import NotDataFound from "./Components/Common/NotFoundPage/NoDataFound";
 import DesktopMessage from "./Components/Common/DesktopMessage";
+import PartnerProfileMain from "./Screen/Partner/PartnerProfile/PartnerProfile/PartnerProfile";
 
 function App() {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -142,6 +143,16 @@ function App() {
             element={
               <PrivateRoute
                 element={isSmallScreen ? <DesktopMessage /> : <NotDataFound />}
+              />
+            }
+          />
+          <Route
+            path="/partner-profile/:partnerId"
+            element={
+              <PrivateRoute
+                element={
+                  isSmallScreen ? <DesktopMessage /> : <PartnerProfileMain />
+                }
               />
             }
           />

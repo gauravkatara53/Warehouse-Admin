@@ -158,7 +158,7 @@ export default function Profile() {
           <>
             <div className="relative">
               <img
-                src="Breadcrumb.png"
+                src="Untitled_design__1_-removebg-preview.png"
                 alt=""
                 className="w-full h-auto object-cover"
               />

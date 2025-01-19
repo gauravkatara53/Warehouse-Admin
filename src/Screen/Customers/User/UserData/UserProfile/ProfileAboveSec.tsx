@@ -60,7 +60,7 @@ const ProfileAboveSec: React.FC<ProfileAboveSecProps> = ({
     : "N/A";
 
   return (
-    <div className="flex flex-col bg-gray-100 min-h-screen pt-10 px-4">
+    <div className="flex flex-col bg-gray-100 pt-10 px-4">
       <div className="self-start mb-4">
         <button className="text-gray-600" onClick={onBackClick}>
           <FontAwesomeIcon icon={faArrowLeft} className="h-5 w-5" />
