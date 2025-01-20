@@ -7,29 +7,34 @@ import { useSpring, animated } from "@react-spring/web";
 
 interface WarehouseStatsResponse {
   success: boolean;
-  data: Array<{
+  data: {
     totalWarehouses: number;
-    activeWarehouses: number;
-  }>;
+    availableWarehouse: number;
+    rentedWarehouse: number;
+    soldWarehouse: number;
+  };
 }
 
 const WarehouseCard = () => {
   const [warehouseStats, setWarehouseStats] = useState({
     totalWarehouses: 0,
-    activeWarehouses: 0,
+    availableWarehouse: 0,
+    rentedWarehouse: 0,
+    soldWarehouse: 0,
   });
   const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
     const fetchPartnerStats = async () => {
-      const data = await apiService.get<WarehouseStatsResponse>(
-        "/admin/getCardStatistics"
+      const response = await apiService.get<WarehouseStatsResponse>(
+        "/warehouse/admin/get/warehouse/card"
       );
-      if (data && data.success && data.data.length > 0 && !dataFetched) {
-        const stats = data.data[0]; // Access the first object in the data array
+      if (response && response.success && response.data && !dataFetched) {
         setWarehouseStats({
-          totalWarehouses: stats.totalWarehouses,
-          activeWarehouses: stats.activeWarehouses,
+          totalWarehouses: response.data.totalWarehouses,
+          availableWarehouse: response.data.availableWarehouse,
+          rentedWarehouse: response.data.rentedWarehouse,
+          soldWarehouse: response.data.soldWarehouse,
         });
         setDataFetched(true); // Trigger animation after data fetch
       }
@@ -61,10 +66,24 @@ const WarehouseCard = () => {
           icon={<FontAwesomeIcon icon={faWallet} />}
         />
         <CardWrapper1
-          heading="Active warehouses"
+          heading="Available warehouses"
           mainNumber={
-            <AnimatedNumber target={warehouseStats.activeWarehouses} />
+            <AnimatedNumber target={warehouseStats.availableWarehouse} />
           }
+          className="sm:mb-0 -mb-3"
+          icon={<FontAwesomeIcon icon={faGlobe} />}
+        />
+        <CardWrapper1
+          heading="Rented warehouses"
+          mainNumber={
+            <AnimatedNumber target={warehouseStats.rentedWarehouse} />
+          }
+          className="sm:mb-0 -mb-3"
+          icon={<FontAwesomeIcon icon={faGlobe} />}
+        />
+        <CardWrapper1
+          heading="Sold warehouses"
+          mainNumber={<AnimatedNumber target={warehouseStats.soldWarehouse} />}
           className="sm:mb-0 -mb-3"
           icon={<FontAwesomeIcon icon={faGlobe} />}
         />

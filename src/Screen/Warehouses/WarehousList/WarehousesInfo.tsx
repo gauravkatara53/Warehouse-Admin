@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from "react-router-dom";
 import {
   faCalendarAlt,
   faSearch,
@@ -10,7 +11,6 @@ import apiService from "@/Components/APIService/apiService";
 import Pagination from "@/Components/Common/Pagination/Pagination";
 import RentOrSellTag from "../../../Components/Warehouse/RentorSellTag";
 import DateRangeModal from "../../../Components/Warehouse/DateRangeModal";
-import "react-datepicker/dist/react-datepicker.css";
 import Message from "@/Components/Common/NotFoundPage/Message";
 
 interface Price {
@@ -43,103 +43,107 @@ interface Warehouse {
   address: string;
   country: string;
   thumbnail: string;
-}
-interface WarehouseInfoProps {
-  onWarehouseSelect: (Warehouse: Warehouse) => void;
+  WarehouseStatus: string;
+  totalPrice: number;
 }
 
-const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
+const WarehouseInfo: React.FC = () => {
+  const navigate = useNavigate();
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  // const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  // const [totalPages, setTotalPages] = useState<number>(1);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [allWarehouse, setAllWarehouse] = useState<Warehouse[]>([]);
-  const warehousePerPage = 10;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const WAREHOUSES_PER_PAGE = 10;
+
+  const fetchWarehouses = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.get<{
+        success: boolean;
+        data: {
+          warehouses: Warehouse[];
+        };
+      }>("/warehouse/all/warehouse");
+
+      if (response?.success) {
+        setWarehouses(response.data.warehouses);
+        setFilteredWarehouses(response.data.warehouses); // Set the filtered list initially
+      } else {
+        setError("Failed to fetch warehouses.");
+      }
+    } catch {
+      setError("An error occurred while fetching warehouses.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchWarehouses = async () => {
-      setLoading(true);
-      let page = 1;
-      let fetchedWarehouses: Warehouse[] = [];
-      let totalFetchedWarehouses = 0;
-
-      try {
-        do {
-          const response = await apiService.get<{
-            success: boolean;
-            data: Warehouse[];
-            page: number;
-            pages: number;
-            pageSize: number;
-            total: number;
-          }>(
-            `/warehouse/all-warehouses?page=${page}&pageSize=${warehousePerPage}`
-          );
-
-          if (response && response.data) {
-            fetchedWarehouses = [...fetchedWarehouses, ...response.data];
-            totalFetchedWarehouses = response.total;
-            page++;
-          }
-        } while (page <= Math.ceil(totalFetchedWarehouses / warehousePerPage));
-
-        setAllWarehouse(fetchedWarehouses);
-        // setWarehouses(fetchedWarehouses);
-        // setTotalPages(Math.ceil(totalFetchedWarehouses / warehousePerPage));
-      } catch (error) {
-        setError("Failed to fetch data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWarehouses();
   }, []);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, startDate, endDate]);
+
+  const applyFilters = () => {
+    let filtered = [...warehouses];
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter((warehouse) =>
+        warehouse.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by date range
+    if (startDate && endDate) {
+      filtered = filtered.filter((warehouse) => {
+        const createdAtDate = new Date(warehouse.createdAt);
+        return createdAtDate >= startDate && createdAtDate <= endDate;
+      });
+    }
+
+    setFilteredWarehouses(filtered);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
 
-  const handleDateSelection = () => {
+  const handleApply = () => {
     if (startDate && endDate) {
+      applyFilters();
       closeModal();
+    } else {
+      console.log("Please select both start and end dates.");
     }
   };
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  const filteredWarehouses = allWarehouse.filter((warehouse) => {
-    const matchesSearchTerm =
-      warehouse.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      warehouse.warehouseAddress
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      warehouse._id.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const isWithinDateRange =
-      (!startDate || new Date(warehouse.createdAt) >= startDate) &&
-      (!endDate || new Date(warehouse.createdAt) <= endDate);
-
-    return matchesSearchTerm && isWithinDateRange;
-  });
-
-  const sortFilteredWarehouse = (warehouses: Warehouse[]) => {
-    return warehouses.sort((a, b) => a.name.localeCompare(b.name));
-  };
-
-  const sortedWarehouse = sortFilteredWarehouse(filteredWarehouses);
-
-  const paginatedWarehouse = sortedWarehouse.slice(
-    (currentPage - 1) * warehousePerPage,
-    currentPage * warehousePerPage
+  // Pagination Logic
+  const startIndex = (currentPage - 1) * WAREHOUSES_PER_PAGE;
+  const currentPageWarehouses = filteredWarehouses.slice(
+    startIndex,
+    startIndex + WAREHOUSES_PER_PAGE
   );
+  const handlePartnerClick = (partnerId: string) => {
+    if (partnerId) {
+      navigate(`/warehouse-profile/${partnerId}`);
+    } else {
+      alert("Partner document ID is missing.");
+    }
+  };
 
   return (
     <div>
@@ -162,7 +166,7 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
 
         <div className="mb-4">
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center ">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
               <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
             </span>
             <input
@@ -170,7 +174,7 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
               placeholder="Search by warehouse name"
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4FD1C5] focus:border-transparent"
               value={searchTerm}
-              onChange={handleSearch}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -180,19 +184,20 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
             <ClipLoader size={50} color={"#4FD1C5"} loading={loading} />
           </div>
         ) : error ? (
-          <Message message="Something went Wrong" />
-        ) : filteredWarehouses.length === 0 ? (
+          <Message message={error} />
+        ) : currentPageWarehouses.length === 0 ? (
           <Message message="No Warehouse found." />
         ) : (
-          paginatedWarehouse.map((warehouse) => (
+          currentPageWarehouses.map((warehouse) => (
             <div
               key={warehouse._id}
+              onClick={() => handlePartnerClick(warehouse._id)}
               className="flex justify-between items-center bg-gray-100 p-4 mb-4 rounded-md"
             >
               <div className="flex items-center space-x-4">
-                <div className="w-24 h-24  -my-2 -ml-1 bg-gray-200 rounded-md overflow-hidden">
+                <div className="w-24 h-24 bg-gray-200 rounded-md overflow-hidden">
                   <img
-                    src={warehouse.imageUrl || "Group 48096434.png"}
+                    src={warehouse.thumbnail || "default-image.png"}
                     alt={warehouse.name}
                     className="object-cover w-full h-full"
                   />
@@ -203,27 +208,26 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
                     <RentOrSellTag type={warehouse.rentOrSell} />
                   </h3>
                   <p className="text-sm text-gray-400">
-                    {warehouse.price[0].title}:{" "}
+                    Status:{" "}
                     <span className="text-gray-600">
-                      ₹{warehouse.price[0].amount}
-                    </span>{" "}
-                    (Discount: ₹{warehouse.price[0].discount})
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Address:{" "}
-                    <span className="text-gray-600">
-                      {warehouse.warehouseAddress}
+                      {warehouse.WarehouseStatus}
                     </span>
                   </p>
                   <p className="text-sm text-gray-400">
-                    Partner ID:{" "}
-                    <span className="text-gray-600">{warehouse._id}</span>
+                    Price:{" "}
+                    <span className="text-gray-600">
+                      ₹ {warehouse.totalPrice}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Address:{" "}
+                    <span className="text-gray-600">{warehouse.address}</span>
                   </p>
                 </div>
               </div>
               <div
+                onClick={() => handlePartnerClick(warehouse._id)}
                 className="flex items-center border border-gray-400 p-2 rounded-full cursor-pointer"
-                onClick={() => onWarehouseSelect(warehouse)}
               >
                 <FontAwesomeIcon
                   icon={faArrowRight}
@@ -236,7 +240,7 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
       </section>
 
       <Pagination
-        totalPages={Math.ceil(sortedWarehouse.length / warehousePerPage)}
+        totalPages={Math.ceil(filteredWarehouses.length / WAREHOUSES_PER_PAGE)}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
@@ -248,7 +252,7 @@ const WarehouseInfo = ({ onWarehouseSelect }: WarehouseInfoProps) => {
         endDate={endDate}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
-        onApply={handleDateSelection}
+        onApply={handleApply}
       />
     </div>
   );

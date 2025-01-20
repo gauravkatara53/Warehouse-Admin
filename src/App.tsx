@@ -18,6 +18,7 @@ import Partner from "./Screen/Partner/Partner";
 import NotDataFound from "./Components/Common/NotFoundPage/NoDataFound";
 import DesktopMessage from "./Components/Common/DesktopMessage";
 import PartnerProfileMain from "./Screen/Partner/PartnerProfile/PartnerProfile/PartnerProfile";
+import WarehouseProfileMain from "./Screen/Warehouses/WarehousList/WarehouseProfile/PartnerProfile/PartnerProfile/WarehouseProfile";
 
 function App() {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -152,6 +153,16 @@ function App() {
               <PrivateRoute
                 element={
                   isSmallScreen ? <DesktopMessage /> : <PartnerProfileMain />
+                }
+              />
+            }
+          />
+          <Route
+            path="/warehouse-profile/:warehouseId"
+            element={
+              <PrivateRoute
+                element={
+                  isSmallScreen ? <DesktopMessage /> : <WarehouseProfileMain />
                 }
               />
             }

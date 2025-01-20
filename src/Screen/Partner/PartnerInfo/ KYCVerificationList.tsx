@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import KYCVerificationPopup from "./KYCVerificationPopup";
 import { ClipLoader } from "react-spinners";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
 import Message from "@/Components/Common/NotFoundPage/Message";
 import apiService from "@/Components/APIService/apiService";
 

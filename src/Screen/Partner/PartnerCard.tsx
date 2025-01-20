@@ -7,10 +7,10 @@ import { useSpring, animated } from "@react-spring/web";
 
 interface WarehouseStatsResponse {
   success: boolean;
-  data: Array<{
+  data: {
     totalPartners: number;
-    activePartners: number;
-  }>;
+    activePartner: number;
+  };
 }
 
 const PartnerCard = () => {
@@ -26,12 +26,15 @@ const PartnerCard = () => {
         const response = await apiService.get<WarehouseStatsResponse>(
           "/admin/partner/Static"
         );
+        console.log("API Response:", response); // Log the response for debugging
         if (response && response.success && response.data) {
           setPartnerStats({
-            totalPartners: response.data.totalPartners,
-            activePartners: response.data.activePartner, // Note the corrected field name
+            totalPartners: response.data.totalPartners, // Correctly access totalPartners
+            activePartners: response.data.activePartner, // Correctly access activePartner
           });
           setDataFetched(true); // Trigger animation after data fetch
+        } else {
+          console.error("No data or incorrect structure in response.");
         }
       } catch (error) {
         console.error("Error fetching partner stats:", error);
