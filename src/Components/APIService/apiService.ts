@@ -1,5 +1,6 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
+
 // Define the base API instance
 const api = axios.create({
   baseURL: "http://localhost:5001/api/v1", // API base URL
@@ -41,6 +42,7 @@ interface ApiService {
   post<T>(url: string, data: object): Promise<T | undefined>;
   put<T>(url: string, data: object): Promise<T | undefined>;
   delete<T>(url: string): Promise<T | undefined>;
+  patch<T>(url: string, data: object): Promise<T | undefined>;
 }
 
 // API service implementation
@@ -75,6 +77,15 @@ const apiService: ApiService = {
   delete: async <T>(url: string): Promise<T | undefined> => {
     try {
       const response: AxiosResponse<T> = await api.delete<T>(url);
+      return response.data;
+    } catch (error: any) {
+      handleApiError(error);
+      return undefined;
+    }
+  },
+  patch: async <T>(url: string, data: object): Promise<T | undefined> => {
+    try {
+      const response: AxiosResponse<T> = await api.patch<T>(url, data);
       return response.data;
     } catch (error: any) {
       handleApiError(error);

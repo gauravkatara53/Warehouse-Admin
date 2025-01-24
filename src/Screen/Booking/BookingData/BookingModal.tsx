@@ -1,126 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import apiService from "@/Components/APIService/apiService";
-import "jspdf-autotable";
-import { generateInvoice } from "./InvoiceGenerator";
 import { ClipLoader } from "react-spinners";
 
-interface Service {
-  description: string;
-  hours: number;
-  rate: number;
-  amount: number;
-}
-
-interface Booking {
-  _id: string;
-  orderId: string;
-  invoiceDate: string;
-  dueDate: string;
-  userName: string;
-  companyName: string;
-  userAddress: string;
-  userPhone: string;
-  userEmail: string;
-  services: Service[];
-  subtotal: number;
-  vatPercent: number;
-  total: number;
-  thumbnail?: string;
-  warehouseName: string;
-  startDate: string;
-  endDate: string;
-  duration: string;
-  warehouseAddress: string;
-  gst: number;
-  totalPaid: number;
-  subTotal: number;
-  customerPhone: string;
-  orderDate: string;
-  customerName: string;
-  sellOrRent: string;
-}
-
 interface BookingModalProps {
-  booking: Booking;
+  booking: any;
   onClose: () => void;
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [detailedData, setDetailedData] = useState<Booking | null>(null);
-
-  const getToken = () => localStorage.getItem("token");
-
-  const fetchBookingDetails = async () => {
-    const token = getToken();
-    if (!token) {
-      setErrorMessage("Authentication token is missing.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await apiService.get<{ data: Booking[] }>(
-        `/admin/booking/${booking._id}`
-      );
-      if (response && response.data.length > 0) {
-        setDetailedData(response.data[0]); // Access the first item in the array
-      }
-    } catch (error) {
-      setErrorMessage("Failed to fetch detailed data. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDisplayValue = (key: keyof Booking) => {
-    const value =
-      detailedData && detailedData[key] !== undefined
-        ? detailedData[key]
-        : booking[key];
-
-    // Handle the case where the value is an array of services
-    if (Array.isArray(value)) {
-      return value.map((service, index) => (
-        <div key={index} className="flex justify-between">
-          <span>{service.description}</span>
-          <span>₹{service.amount}</span>
-        </div>
-      ));
-    }
-
-    // Otherwise, return the value as a string or number
-    return value;
-  };
 
   useEffect(() => {
-    fetchBookingDetails();
+    setLoading(false);
+    console.log("Booking Data:", booking); // Debug: Check if the booking data is being passed correctly
   }, [booking]);
-  console.log(detailedData);
-  // Helper to get data from `detailedData` or fallback to `booking`
 
-  // Ensure the result of getDisplayValue for image src is always a string
-  const getThumbnailSrc = () => {
-    const thumbnail = getDisplayValue("thumbnail");
-    return typeof thumbnail === "string" ? thumbnail : "Mask Group.png";
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
   };
 
-  // Ensure the subtotal and gst are numbers for addition
-  // const getTotalAmount = () => {
-  //   const subtotal = getDisplayValue("subtotal");
-  //   const gst = getDisplayValue("gst") || 0;
-  //   return (
-  //     (typeof subtotal === "number" ? subtotal : 0) +
-  //     (typeof gst === "number" ? gst : 0)
-  //   );
-  // };
+  if (!booking) {
+    console.log("No booking data available.");
+    setErrorMessage("No booking details available.");
+    return (
+      <div className="text-center p-6 text-red-500">
+        <p>No booking details available.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative bg-white w-full max-w-md p-6 pb-1 rounded-lg">
-      {/* Close Button */}
       <button
         className="absolute top-4 right-4 text-gray-500"
         onClick={onClose}
@@ -128,10 +46,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
         <FontAwesomeIcon icon={faTimes} />
       </button>
 
-      {/* Modal Content */}
       <h2 className="text-lg font-semibold mb-4">
-        Booking Detail: {getDisplayValue("orderId") || "N/A"}
+        Booking Detail: {booking?.orderId || "N/A"}
       </h2>
+
       {loading ? (
         <div className="flex justify-center items-center">
           <ClipLoader size={30} color="#4A90E2" className="my-8" />
@@ -142,59 +60,64 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
         <div>
           <div className="flex mb-4">
             <div className="w-1/2 flex items-center">
-              <img
-                src={getThumbnailSrc()}
-                alt="Logo"
-                className="h-12 w-12 border rounded-md mr-2"
-              />
               <h1 className="text-gray-800 text-lg whitespace-nowrap">
-                {getDisplayValue("warehouseName") || "N/A"}
+                {booking?.WarehouseDetail?.name ||
+                  "Warehouse Name Not Available"}
               </h1>
             </div>
             <div className="w-1/2 flex items-center justify-end">
               <span className="bg-white border text-green-500 px-3 py-1 rounded">
-                Active
+                {booking?.orderStatus || "Status Not Available"}
               </span>
             </div>
           </div>
+
           <div className="mb-6">
             <div className="grid grid-cols-2 gap-4 mb-4 bg-gray-100 p-3 rounded-xl">
               <span className="text-gray-600 text-lg">Customer Name</span>
               <span className="text-right">
-                {getDisplayValue("userName") || "N/A"}
+                {booking?.customerDetails?.name ||
+                  "Customer Name Not Available"}
               </span>
             </div>
+
             <div className="bg-gray-100 mb-4 p-3 rounded-xl">
               <h3 className="font-semibold mb-2 text-gray-600">
                 Booking Details
               </h3>
+
               <div className="grid grid-cols-2 gap-2 text-gray-600">
                 <span>Booking Start On</span>
                 <span className="text-right">
-                  {getDisplayValue("startDate") || "N/A"}
+                  {formatDate(booking?.startDate)}
                 </span>
                 <span>Booking End On</span>
                 <span className="text-right">
-                  {getDisplayValue("endDate") || "N/A"}
+                  {formatDate(booking?.endDate)}
                 </span>
                 <span>Duration</span>
                 <span className="text-right">
-                  {getDisplayValue("duration") || "N/A"}
+                  {booking?.duration || "Duration Not Available"} Days
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4 text-gray-600 bg-gray-100 p-3 rounded-xl">
-              <span>Address</span>
+              <span>Warehouse Address</span>
               <span className="text-right">
-                {getDisplayValue("warehouseAddress") || "N/A"}
+                {booking?.WarehouseDetail?.address
+                  ? `${booking?.WarehouseDetail?.address}, ${booking?.WarehouseDetail?.city}, ${booking?.WarehouseDetail?.state} - ${booking?.WarehouseDetail?.pincode}, ${booking?.WarehouseDetail?.country}`
+                  : "Warehouse Location Not Available"}
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-4 mb-4 text-gray-600 bg-gray-100 p-3 rounded-xl">
               <span>Contact Details</span>
               <div className="flex justify-between">
-                <span>{getDisplayValue("userPhone") || "N/A"}</span>
+                <span>
+                  {booking?.customerDetails?.phone ||
+                    "User Phone Not Available"}
+                </span>
                 <button className="text-[#47A374]">Call Customer</button>
               </div>
             </div>
@@ -202,12 +125,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
             <div className="grid grid-cols-2 gap-4 mb-4 text-gray-600 bg-gray-100 p-3 rounded-xl">
               <span>Subtotal</span>
               <span className="text-right">
-                ₹{getDisplayValue("subTotal") || "N/A"}
+                ₹{booking?.subTotalPrice || "0"}
               </span>
 
-              <span>GST</span>
+              <span>Discount</span>
               <span className="text-right">
-                ₹{getDisplayValue("gst") || "N/A"}
+                ₹{booking?.totalDiscount || "0"}
               </span>
 
               <span className="col-span-2">
@@ -215,21 +138,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
               </span>
 
               <span>Total</span>
-              <span className="text-right">
-                ₹{getDisplayValue("totalPaid") || "N/A"}
-              </span>
+              <span className="text-right">₹{booking?.totalPrice || "0"}</span>
             </div>
-
-            <button
-              className="bg-[#47A374] w-full text-white py-2 px-4 rounded"
-              onClick={() =>
-                generateInvoice(
-                  detailedData ? { ...booking, ...detailedData } : booking
-                )
-              }
-            >
-              Download Invoice
-            </button>
           </div>
         </div>
       )}

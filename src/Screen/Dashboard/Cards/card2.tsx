@@ -7,7 +7,7 @@ import CardWrapper2 from "@/Components/Common/WHWrapper2";
 import { useSpring, animated } from "@react-spring/web";
 
 interface CardStats {
-  todaysEarnings: number;
+  todayEarnings: number;
   monthEarnings: number;
 }
 
@@ -27,7 +27,7 @@ const AnimatedNumber = ({ target }: { target: number }) => {
 
 export default function Card2() {
   const [cardStats, setCardStats] = useState<CardStats>({
-    todaysEarnings: 0,
+    todayEarnings: 0,
     monthEarnings: 0,
   });
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +36,15 @@ export default function Card2() {
     const fetchCardStats = async () => {
       try {
         const response = await apiService.get<{
-          success: boolean;
+          statusCode: number;
           data: CardStats;
-        }>("/admin/dashboard-card");
+          message: string;
+          success: boolean;
+          errors: null | string;
+          timestamp: string;
+        }>("/admin/card/dashboard/details");
 
-        if (response?.success) {
+        if (response?.success && response.data) {
           setCardStats(response.data);
         } else {
           throw new Error("Failed to fetch data");
@@ -58,14 +62,16 @@ export default function Card2() {
       <CardWrapper2
         heading="Today"
         subHeading="Earnings"
-        bottomHeading={<AnimatedNumber target={cardStats.todaysEarnings} />}
+        bottomHeading={<AnimatedNumber target={cardStats.todayEarnings} />}
         icon={<FontAwesomeIcon icon={faWallet} />}
+        className="text-green-500"
       />
       <CardWrapper2
         heading="This Month"
         subHeading="Earnings"
         bottomHeading={<AnimatedNumber target={cardStats.monthEarnings} />}
         icon={<FontAwesomeIcon icon={faPaypal} />}
+        className="text-green-500"
       />
       {error && (
         <p className="col-span-2 text-md text-red-500 rounded-sm">{error}</p>

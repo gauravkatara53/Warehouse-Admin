@@ -5,132 +5,197 @@ import {
   faPencilAlt,
   faSignOutAlt,
   faCheck,
+  faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import "./style.css";
+import apiService from "@/Components/APIService/apiService";
+
+interface ProfileData {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  role: string;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  pincode?: string;
+  state?: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: ProfileData;
+  message: string;
+}
+
+interface LogoutResponse {
+  success: boolean;
+  message: string;
+  data: {};
+  statusCode: number;
+  errors: null | any;
+  timestamp: string;
+}
 
 export default function Profile() {
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false); // State to control edit mode for all fields
+  const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState("");
   const [newMobile, setNewMobile] = useState("");
   const [newLocation, setNewLocation] = useState("");
-  const [actionLoading, setActionLoading] = useState(false); // Spinner for logout and edit
+  const [newCity, setNewCity] = useState("");
+  const [newState, setNewState] = useState("");
+  const [newCountry, setNewCountry] = useState("");
+  const [newPincode, setNewPincode] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const fetchProfileData = async () => {
+    setLoading(true);
+    setError(null);
 
-        if (!token) {
-          navigate("/signin");
-          return;
-        }
+    try {
+      const response = await apiService.get<ApiResponse>("/admin/get-admin");
 
-        const response = await fetch(
-          "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          navigate("/signin");
-          throw new Error("Failed to fetch profile data.");
-        }
-
-        const data = await response.json();
-        setProfileData(data);
-      } catch (error) {
-        setError("Something went wrong while fetching the data.");
-      } finally {
-        setLoading(false);
+      if (response?.success) {
+        setProfileData(response.data);
+      } else {
+        setError("Failed to fetch profile data.");
       }
-    };
+    } catch (error) {
+      setError("Something went wrong while fetching the data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleUploadOrUpdate = async (file: File | null) => {
+    if (!file) {
+      console.error("No file selected");
+      return; // Exit if no file is selected
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file); // Append the file to the FormData object
+
+    try {
+      const response = await apiService.patch<ApiResponse>(
+        "/admin/update-avatar",
+        formData // Axios will handle the Content-Type for FormData
+      );
+
+      if (response?.success) {
+        // Update the profile data with the new avatar URL
+        setProfileData((prevData) =>
+          prevData
+            ? {
+                ...prevData,
+                avatar: response.data.avatar, // Update the avatar
+              }
+            : null
+        );
+        alert(response.message); // Show success message
+      } else {
+        setError("Failed to update avatar.");
+      }
+    } catch (error) {
+      console.error("Error updating avatar:", error); // Log the error for debugging
+      setError("Something went wrong while updating the avatar.");
+    }
+  };
+
+  const handleEditInfo = async () => {
+    setActionLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.patch<ApiResponse>(
+        "/admin/update-detail",
+        {
+          name: newName,
+          phone: newMobile,
+          address: newLocation,
+          city: newCity,
+          state: newState,
+          country: newCountry,
+          pincode: newPincode,
+        }
+      );
+
+      if (response?.success) {
+        setProfileData((prevData: ProfileData | null) => ({
+          ...prevData,
+          name: newName,
+          phone: newMobile,
+          address: newLocation,
+          city: newCity || prevData?.city,
+          state: newState || prevData?.state,
+          country: newCountry || prevData?.country,
+          pincode: newPincode || prevData?.pincode,
+          _id: prevData?._id || "",
+          email: prevData?.email || "",
+          avatar: prevData?.avatar || "",
+          role: prevData?.role || "",
+          isVerified: prevData?.isVerified || false,
+          createdAt: prevData?.createdAt || "",
+          updatedAt: prevData?.updatedAt || "",
+        }));
+        setEditing(false); // Exit edit mode after saving
+      } else {
+        setError("Failed to update profile data.");
+      }
+    } catch (error) {
+      setError("Something went wrong while updating the data.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProfileData();
   }, []);
 
   const handleLogout = async () => {
     setLogoutLoading(true);
+    setError(null);
+
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/logout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiService.post<LogoutResponse>(
+        "/admin/loginOut",
+        {}
+      ); // Provide an empty object as the second argument
 
-      const result = await response.json();
+      if (response?.success) {
+        // Remove user data from local storage
+        localStorage.removeItem("userData");
 
-      if (result.success) {
-        alert(result.message);
-        localStorage.removeItem("token");
-        navigate("/signin");
+        // Clear cookies
+        document.cookie.split(";").forEach((cookie) => {
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie =
+            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"; // Clear the cookie
+        });
+
+        alert(response.message);
+        navigate("/"); // Redirect to login after logout
       } else {
-        alert("Failed to log out.");
+        setError("Failed to log out.");
       }
     } catch (error) {
-      console.error("Logout error:", error);
-      alert("An error occurred while logging out.");
+      setError("An error occurred while logging out.");
     } finally {
       setLogoutLoading(false);
-    }
-  };
-
-  // Handle saving edited information for all fields
-  const handleEditInfo = async () => {
-    setActionLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        "https://bookmywarehouse-cwd2a3hgejevh8ht.eastus-01.azurewebsites.net/api/v1/admin/update-profile",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: newName,
-            phone: newMobile,
-            address: newLocation,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const updatedProfile = {
-          ...profileData,
-          data: {
-            ...profileData.data,
-            name: newName,
-            phone: newMobile,
-            address: newLocation,
-          },
-        };
-        setProfileData(updatedProfile);
-        setEditing(false); // Exit edit mode
-      } else {
-        throw new Error("Failed to update the profile.");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
-    } finally {
-      setActionLoading(false);
     }
   };
 
@@ -167,7 +232,7 @@ export default function Profile() {
                 <section className="flex flex-col sm:flex-row justify-between items-center p-4 py-3 bg-white bg-opacity-80 rounded-md shadow-md mx-4 sm:mx-6 px-3 lg:px-8">
                   <div className="relative flex-shrink-0 mb-4 sm:mb-0">
                     <img
-                      src={profileData.data.avatar || "userde.jpg"}
+                      src={profileData?.avatar || "userde.jpg"}
                       alt="Profile"
                       className="w-20 h-20 rounded-lg object-cover"
                     />
@@ -185,20 +250,36 @@ export default function Profile() {
                         className="text-gray-500"
                       />
                     </span>
+
                     <input
                       id="fileInput"
                       type="file"
                       accept="image/*"
                       className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          console.log("Selected file:", file); // Debugging line
+                          handleUploadOrUpdate(file); // Call the upload function with the selected file
+                        } else {
+                          console.error("No file selected"); // Debugging line
+                        }
+                      }}
                     />
                   </div>
 
                   <div className="ml-0 sm:ml-6 flex-grow text-center sm:text-left">
                     <h2 className="text-lg font-semibold">
-                      {profileData?.data?.name ?? "NA"}
+                      {profileData?.name ?? "NA"}
+                      {profileData?.isVerified && (
+                        <FontAwesomeIcon
+                          icon={faCheckCircle}
+                          className="text-blue-500 ml-2"
+                        />
+                      )}
                     </h2>
                     <p className="text-gray-400 text-sm">
-                      {profileData?.data?.email ?? "NA"}
+                      {profileData?.email ?? "NA"}
                     </p>
                   </div>
 
@@ -231,7 +312,7 @@ export default function Profile() {
                   <h3 className="text-lg font-bold text-gray-800">Role</h3>
                   <div>
                     <span className="text-gray-500">
-                      {profileData?.data?.role ?? "NA"}
+                      {profileData?.role ?? "NA"}
                     </span>
                   </div>
 
@@ -252,7 +333,7 @@ export default function Profile() {
                           />
                         ) : (
                           <span className="text-gray-500">
-                            {profileData?.data?.name ?? "NA"}
+                            {profileData?.name ?? "NA"}
                           </span>
                         )}
                       </div>
@@ -274,9 +355,13 @@ export default function Profile() {
                           className="ml-2 text-gray-500 cursor-pointer"
                           onClick={() => {
                             setEditing(true);
-                            setNewName(profileData?.data?.name || "");
-                            setNewMobile(profileData?.data?.phone || "");
-                            setNewLocation(profileData?.data?.address || "");
+                            setNewName(profileData?.name || "");
+                            setNewMobile(profileData?.phone || "");
+                            setNewLocation(profileData?.address || "");
+                            setNewCity(profileData?.city || ""); // Set newCity from profileData
+                            setNewState(profileData?.state || ""); // Set newState from profileData
+                            setNewCountry(profileData?.country || ""); // Set newCountry from profileData
+                            setNewPincode(profileData?.pincode || ""); // Set newPincode from profileData
                           }}
                         />
                       )}
@@ -295,7 +380,7 @@ export default function Profile() {
                         />
                       ) : (
                         <span className="text-gray-500">
-                          {profileData?.data?.phone ?? "NA"}
+                          {profileData?.phone ?? "NA"}
                         </span>
                       )}
                     </div>
@@ -313,7 +398,80 @@ export default function Profile() {
                         />
                       ) : (
                         <span className="text-gray-500">
-                          {profileData?.data?.address ?? "NA"}
+                          {profileData?.address ?? "NA"},{" "}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* New fields for city, state, country, and pincode */}
+                    <div>
+                      <span className="font-semibold text-gray-700">
+                        City:{" "}
+                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newCity}
+                          onChange={(e) => setNewCity(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.city ?? "NA"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="font-semibold text-gray-700">
+                        State:{" "}
+                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newState}
+                          onChange={(e) => setNewState(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.state ?? "NA"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="font-semibold text-gray-700">
+                        Country:{" "}
+                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newCountry}
+                          onChange={(e) => setNewCountry(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.country ?? "NA"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="font-semibold text-gray-700">
+                        Pincode:{" "}
+                      </span>
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={newPincode}
+                          onChange={(e) => setNewPincode(e.target.value)}
+                          className="border p-2 rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-500">
+                          {profileData?.pincode ?? "NA"}
                         </span>
                       )}
                     </div>

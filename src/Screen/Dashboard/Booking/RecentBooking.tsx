@@ -10,15 +10,9 @@ interface Booking {
   _id: string;
   orderId: string;
   orderStatus: string;
-  sellOrRent: string;
   warehouseName: string;
-  warehouseAddress: string;
-  about: string;
-  category: string;
-  thumbnail: string;
+  customerName: string;
   partnerName: string;
-  partnerPhone: string;
-  userName: string;
   userPhone: string;
 }
 
@@ -33,15 +27,25 @@ const RecentBooking: React.FC = () => {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const response = await apiService.get<{ data: Booking[] }>(
-          "/admin/dashboard-recent-booking"
+        const response = await apiService.get<{ data: any[] }>(
+          "/admin/dashboard/recent/booking"
         );
         if (response && response.data) {
-          setBookings(response.data);
+          // Map API response to the required booking structure
+          const formattedBookings = response.data.map((booking) => ({
+            _id: booking._id,
+            orderId: booking.orderId,
+            orderStatus: booking.orderStatus,
+            warehouseName: booking.WarehouseDetail?.name || "N/A",
+            customerName: booking.customerDetails?.name || "N/A",
+            partnerName: booking.partnerDetails,
+            userPhone: booking.customerDetails?.phone || "N/A",
+          }));
+          setBookings(formattedBookings);
         }
       } catch (error) {
         console.error("Error fetching bookings:", error);
-        setError("Something went wrong"); // Update error state
+        setError("Something went wrong");
       } finally {
         setLoading(false);
       }
@@ -91,7 +95,7 @@ const RecentBooking: React.FC = () => {
             >
               {/* Booking Info */}
               <div>
-                <h3 className="text-sm font-medium">{booking.userName}</h3>
+                <h3 className="text-sm font-medium">{booking.customerName}</h3>
                 <p className="text-sm text-gray-400">
                   Warehouse Name:{" "}
                   <span className="text-gray-600">{booking.warehouseName}</span>

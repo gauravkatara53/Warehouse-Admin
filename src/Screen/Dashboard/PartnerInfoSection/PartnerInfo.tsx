@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import CustomButton from "@/Components/Common/button";
 import KYCVerificationPopup from "@/Screen/Partner/PartnerInfo/KYCVerificationPopup";
 import { ClipLoader } from "react-spinners";
-import Pagination from "@/Components/Common/Pagination/Pagination";
-import { toast } from "react-toastify";
-import apiService from "@/Components/APIService/apiService";
 import Message from "@/Components/Common/NotFoundPage/Message";
+import apiService from "@/Components/APIService/apiService";
 
 interface Partner {
   _id: string;
@@ -16,7 +14,6 @@ interface Partner {
   name: string;
   phone: string;
   avatar?: string;
-  email?: string;
 }
 
 const PartnerInfoSection: React.FC = () => {
@@ -25,11 +22,10 @@ const PartnerInfoSection: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [allPartner, setAllPartner] = useState<Partner[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const PartnerPerPage = 10;
+  const PARTNERS_PER_PAGE = 10;
 
   const handleKYCNavigation = () => {
     navigate("/partners", { state: { initialTab: "kyc" } });
@@ -39,30 +35,22 @@ const PartnerInfoSection: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      let page = 1;
-      const fetchKYCPartners: Partner[] = [];
-      while (true) {
-        const response = await apiService.get<{
-          success: boolean;
-          data: Partner[];
-          page: number;
-          pages: number;
-          limit: number;
-          total: number;
-        }>(`/admin/kyc/partners?page=${page}&limit=${PartnerPerPage}`);
+      const response = await apiService.get<{
+        success: boolean;
+        data: {
+          partners: Partner[]; // Adjusted to match API response key
+        };
+        message: string;
+      }>(
+        `partner/all-partner?kycStatus=Processing&limit=${PARTNERS_PER_PAGE}&search=${searchTerm}`
+      );
 
-        // Ensure response and data are defined before accessing them
-        if (response && response.success && response.data.length > 0) {
-          fetchKYCPartners.push(...response.data);
-          if (page >= response.pages) break;
-          page++;
-        } else {
-          break; // Exit the loop if no more data
-        }
+      if (response && response.success && response.data.partners.length > 0) {
+        setAllPartner(response.data.partners);
+      } else {
+        setAllPartner([]);
       }
-      setAllPartner(fetchKYCPartners);
     } catch (error: any) {
-      toast.error(error.message || "Failed to fetch data.");
       setError("Failed to fetch data. Please check your authentication.");
     } finally {
       setLoading(false);
@@ -71,7 +59,7 @@ const PartnerInfoSection: React.FC = () => {
 
   useEffect(() => {
     fetchKYCPartners();
-  }, []);
+  }, [searchTerm]);
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
@@ -80,24 +68,7 @@ const PartnerInfoSection: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
   };
-
-  const filteredPartner = allPartner.filter((partner) => {
-    const matchesSearchTerm =
-      partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner._id.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearchTerm;
-  });
-
-  const sortedPartner = filteredPartner.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-
-  const paginatedPartner = sortedPartner.slice(
-    (currentPage - 1) * PartnerPerPage,
-    currentPage * PartnerPerPage
-  );
 
   return (
     <div className="p-4 bg-white rounded-lg">
@@ -134,12 +105,12 @@ const PartnerInfoSection: React.FC = () => {
         </div>
       ) : error ? (
         <Message message={error} />
-      ) : sortedPartner.length === 0 ? (
+      ) : allPartner.length === 0 ? (
         <Message message="No Partner for KYC verification" />
       ) : (
         <>
           <ul className="mt-6 space-y-4">
-            {paginatedPartner.map((partner) => (
+            {allPartner.map((partner) => (
               <li
                 key={partner._id}
                 className="flex justify-between items-center p-4 border-b border-gray-200"
@@ -178,12 +149,6 @@ const PartnerInfoSection: React.FC = () => {
               </li>
             ))}
           </ul>
-
-          <Pagination
-            totalPages={Math.ceil(sortedPartner.length / PartnerPerPage)}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
         </>
       )}
 
