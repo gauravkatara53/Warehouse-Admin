@@ -10,16 +10,27 @@ import "react-datepicker/dist/react-datepicker.css";
 import Message from "@/Components/Common/NotFoundPage/Message";
 
 type Transaction = {
-  transactionType: string;
-  orderId: string;
-  customerName: string;
-  customerEmail: string;
-  warehouseName: string;
-  status: string;
-  amount: number;
-  sellOrRent: string;
+  _id: string;
+  warehouseId: {
+    _id: string;
+    name: string;
+  };
+  orderId: {
+    _id: string;
+    orderStatus: string;
+  };
+  totalPrice: number;
+  transactionDate: string;
+  createdBy: {
+    _id: string;
+    name: string;
+  };
   paymentStatus: string;
-  date: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string | null;
+  razorpaySignature: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type GroupedTransactionEntry = {
@@ -44,14 +55,19 @@ const TransactionSectionAll = () => {
     const fetchTransactions = async () => {
       try {
         const response = await apiService.get<{ transactions: Transaction[] }>(
-          "/admin/transactions"
+          "/admin/all/transactions"
         );
-        if (response?.transactions) {
+        console.log("API Response:", response); // Log the response
+        if (response?.data?.transactions) {
+          // Correctly access the transactions
           const sortedTransactions = flattenAndSortTransactions(
-            response.transactions
-          );
+            response.data.transactions
+          ); // Access transactions from response.data
           setGroupedTransactions(sortedTransactions);
           setError(null);
+        } else {
+          console.error("No transactions found in the response");
+          setError("No transactions found.");
         }
       } catch (error) {
         console.error("Failed to fetch transactions:", error);
@@ -72,7 +88,7 @@ const TransactionSectionAll = () => {
     const weekEnd = endOfWeek(today);
 
     transactions.forEach((tx) => {
-      const paymentDate = new Date(tx.date);
+      const paymentDate = new Date(tx.transactionDate);
       let dateLabel = "";
 
       if (isToday(paymentDate)) {
@@ -98,24 +114,26 @@ const TransactionSectionAll = () => {
       .flat()
       .sort(
         (a, b) =>
-          new Date(b.transaction.date).getTime() -
-          new Date(a.transaction.date).getTime()
+          new Date(b.transaction.transactionDate).getTime() -
+          new Date(a.transaction.transactionDate).getTime()
       );
   };
 
   // Filter transactions based on search term and date range
   const filteredTransactions = groupedTransactions.filter((transaction) => {
     const matchesSearchTerm =
-      transaction.transaction.customerName
+      transaction.transaction.createdBy.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ?? false;
 
-    const paymentDate = new Date(transaction.transaction.date);
+    const paymentDate = new Date(transaction.transaction.transactionDate);
     const isWithinDateRange =
       (!startDate || paymentDate >= startDate) &&
       (!endDate || paymentDate <= endDate);
     return matchesSearchTerm && isWithinDateRange;
   });
+
+  console.log("Filtered Transactions:", filteredTransactions);
 
   const handleDateSelection = () => {
     setModalOpen(true);
@@ -175,7 +193,7 @@ const TransactionSectionAll = () => {
         ) : (
           paginatedTransactions.map(({ dateLabel, transaction }, index) => (
             <div
-              key={`${transaction.orderId}-${index}`}
+              key={`${transaction._id}-${index}`}
               style={{ marginBottom: "1.5rem" }}
             >
               {(index === 0 ||
@@ -210,31 +228,84 @@ const TransactionSectionAll = () => {
 };
 
 const TransactionItem = ({ tx }: { tx: Transaction }) => {
-  const formattedDate = format(new Date(tx.date), "dd MMM yyyy 'at' hh:mm a");
-  const amount = tx.amount ? tx.amount.toFixed(2) : "0.00";
+  const formattedDate = format(
+    new Date(tx.transactionDate),
+    "dd MMM yyyy 'at' hh:mm a"
+  );
+  const amount = tx.totalPrice ? tx.totalPrice.toFixed(2) : "0.00";
 
+  function getStatusIcon(orderStatus: string): import("react").ReactNode {
+    switch (orderStatus) {
+      case "Completed":
+        return (
+          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-green-500 mr-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 10l7-7m0 0l7 7m-7-7v18"
+              />
+            </svg>
+          </div>
+        );
+      case "Failed":
+        return (
+          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-red-500 mr-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
+        );
+      case "Pending":
+        return (
+          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-yellow-500 mr-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-yellow-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01m-6.938 4h13.856C18.602 21 20 19.656 20 18.01V5.99C20 4.344 18.602 3 16.928 3H7.072C5.398 3 4 4.344 4 5.99v12.02C4 19.656 5.398 21 7.072 21z"
+              />
+            </svg>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }
   return (
     <div className="flex justify-between items-center -mx-3 p-4 pl-1 pr-1 rounded-lg mb-3 shadow-sm sm:-mx-0 sm:p-4 sm:pl-4 sm:pr-4">
       <div className="flex items-center">
-        <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-green-500 mr-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
-          </svg>
-        </div>
-
+        {getStatusIcon(tx.orderId.orderStatus)}{" "}
+        {/* Use the getStatusIcon function here */}
         <div>
-          <p className="font-medium text-sm sm:text-base">{tx.customerName}</p>
+          <p className="font-medium text-sm sm:text-base">
+            {tx.createdBy.name}
+          </p>
           <p className="text-xs sm:text-sm text-gray-400">{formattedDate}</p>
         </div>
       </div>

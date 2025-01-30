@@ -8,29 +8,34 @@ import { useSpring, animated } from "@react-spring/web";
 interface EarningStatsCard {
   success: boolean;
   data: {
-    today: number;
-    weekly: number;
-    monthly: number;
-    yearly: number;
+    todayEarnings: number;
+    weeklyEarnings: number;
+    monthEarnings: number;
+    yearlyEarnings: number;
   };
 }
 
 const EarningStatsCard = () => {
   const [partnerStats, setPartnerStats] = useState({
-    today: 0,
-    weekly: 0,
-    monthly: 0,
-    yearly: 0,
+    todayEarnings: 0,
+    weeklyEarnings: 0,
+    monthEarnings: 0,
+    yearlyEarnings: 0,
   });
   const [dataFetched, setDataFetched] = useState(false);
 
   useEffect(() => {
     const fetchPartnerStats = async () => {
       const data = await apiService.get<EarningStatsCard>(
-        "/admin/transactions-card"
+        "/admin/card/transactions"
       );
       if (data && data.success) {
-        setPartnerStats(data.data);
+        setPartnerStats({
+          todayEarnings: data.data.todayEarnings,
+          weeklyEarnings: data.data.weeklyEarnings,
+          monthEarnings: data.data.monthEarnings,
+          yearlyEarnings: data.data.yearlyEarnings,
+        });
         setDataFetched(true); // Trigger animation after data fetch
       }
     };
@@ -58,26 +63,26 @@ const EarningStatsCard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-[96vw] sm:max-w-none">
         <CardWrapper1
           heading="Today’s Earning"
-          mainNumber={<AnimatedNumber target={partnerStats.today} />}
-          className="sm:mb-0 -mb-3"
+          mainNumber={<AnimatedNumber target={partnerStats.todayEarnings} />}
+          className="sm:mb-0 -mb-3 text-green-500"
           icon={<FontAwesomeIcon icon={faWallet} />}
         />
         <CardWrapper1
           heading="Week’s Earning"
-          mainNumber={<AnimatedNumber target={partnerStats.weekly} />}
-          className="sm:mb-0 -mb-3"
+          mainNumber={<AnimatedNumber target={partnerStats.weeklyEarnings} />}
+          className="sm:mb-0 -mb-3  text-green-500"
           icon={<FontAwesomeIcon icon={faGlobe} />}
         />
         <CardWrapper1
           heading="Month’s Earning"
-          mainNumber={<AnimatedNumber target={partnerStats.monthly} />}
-          className="sm:mb-0 -mb-3"
+          mainNumber={<AnimatedNumber target={partnerStats.monthEarnings} />}
+          className="sm:mb-0 -mb-3  text-green-500"
           icon={<FontAwesomeIcon icon={faGlobe} />}
         />
         <CardWrapper1
           heading="Year’s Earning"
-          mainNumber={<AnimatedNumber target={partnerStats.yearly} />}
-          className="sm:mb-0 -mb-3"
+          mainNumber={<AnimatedNumber target={partnerStats.yearlyEarnings} />}
+          className="sm:mb-0 -mb-3  text-green-500"
           icon={<FontAwesomeIcon icon={faGlobe} />}
         />
       </div>

@@ -8,6 +8,7 @@ import Message from "@/Components/Common/NotFoundPage/Message";
 type Transaction = {
   _id: string;
   warehouseName: string;
+  userName: string;
   transactionDate: string;
   totalPrice: number;
   orderStatus: string;
@@ -31,6 +32,7 @@ const TransactionSection = () => {
           data: {
             _id: string;
             warehouseId: { _id: string; name: string };
+            createdBy: { _id: string; name: string };
             transactionDate: string;
             totalPrice: number;
             orderId: { _id: string; orderStatus: string };
@@ -42,6 +44,7 @@ const TransactionSection = () => {
           const transactions = response.data.map((tx) => ({
             _id: tx._id,
             warehouseName: tx.warehouseId.name,
+            userName: tx.createdBy.name,
             transactionDate: tx.transactionDate,
             totalPrice: tx.totalPrice,
             orderStatus: tx.orderId.orderStatus,
@@ -227,7 +230,9 @@ const TransactionItem = ({ tx }: { tx: Transaction }) => {
         {getStatusIcon(tx.paymentStatus)}
 
         <div>
-          <p className="font-medium text-sm sm:text-base">{tx.warehouseName}</p>
+          <p className="font-medium text-sm sm:text-base">
+            {tx.userName} - {tx.warehouseName}
+          </p>
           <p className="text-xs sm:text-sm text-gray-400">{formattedDate}</p>
         </div>
       </div>

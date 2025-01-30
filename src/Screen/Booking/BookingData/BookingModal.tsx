@@ -66,7 +66,20 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
               </h1>
             </div>
             <div className="w-1/2 flex items-center justify-end">
-              <span className="bg-white border text-green-500 px-3 py-1 rounded">
+              <span
+                className={`px-3 py-1 rounded border ${
+                  booking?.orderStatus === "Pending"
+                    ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                    : booking?.orderStatus === "Processing"
+                    ? "bg-blue-100 text-blue-700 border-blue-300"
+                    : booking?.orderStatus === "Completed"
+                    ? "bg-green-100 text-green-700 border-green-300"
+                    : booking?.orderStatus === "Cancelled" ||
+                      booking?.orderStatus === "Failed"
+                    ? "bg-red-100 text-red-700 border-red-300"
+                    : "bg-white text-gray-500 border-gray-300"
+                }`}
+              >
                 {booking?.orderStatus || "Status Not Available"}
               </span>
             </div>
@@ -97,7 +110,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
                 </span>
                 <span>Duration</span>
                 <span className="text-right">
-                  {booking?.duration || "Duration Not Available"} Days
+                  {booking?.duration || "Duration Not Available"} Months
                 </span>
               </div>
             </div>

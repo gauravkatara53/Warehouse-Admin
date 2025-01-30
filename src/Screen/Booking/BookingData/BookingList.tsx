@@ -26,7 +26,9 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [totalPages, setTotalPages] = useState<number>(0);
-
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
@@ -45,6 +47,9 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
         if (response?.data) {
           setBookings(response.data.orders);
           setTotalPages(response.data.totalPages);
+          const firstBooking = response.data.orders[0];
+          setSelectedBookingId(firstBooking._id);
+          onBookingSelect(firstBooking);
         } else {
           setError("Failed to fetch bookings.");
         }
@@ -64,7 +69,8 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
   };
 
   const handleBookingClick = (booking: any) => {
-    onBookingSelect(booking);
+    setSelectedBookingId(booking._id); // Update selected booking ID
+    onBookingSelect(booking); // Call the parent function
   };
 
   const filterBookingsByDate = () => {
@@ -135,7 +141,11 @@ const AllBooking: React.FC<{ onBookingSelect: (booking: any) => void }> = ({
             {filteredBookings.map((booking) => (
               <div
                 key={booking._id}
-                className="flex justify-between items-center p-4 rounded-md cursor-pointer bg-gray-100"
+                className={`flex justify-between items-center p-4 rounded-md cursor-pointer ${
+                  booking._id === selectedBookingId
+                    ? "bg-gray-50 border border-[#4FD1C5]"
+                    : "bg-gray-100"
+                }`}
                 onClick={() => handleBookingClick(booking)}
               >
                 <div>
