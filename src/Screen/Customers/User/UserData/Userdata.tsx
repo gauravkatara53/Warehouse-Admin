@@ -55,15 +55,17 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
         // Loop to fetch all pages of users
         do {
           const response = await apiService.get<{
-            data: User[];
-            page: number;
-            pages: number;
-            pageSize: number;
-            total: number;
-          }>(`/admin/users/all-users?page=${page}&pageSize=${usersPerPage}`);
+            data: {
+              users: User[];
+              totalUsers: number;
+              currentPage: number;
+              limit: number;
+              totalPages: number;
+            };
+          }>(`/admin/get/all/user?page=${page}&pageSize=${usersPerPage}`);
 
-          if (response && response.data) {
-            const formattedData = response.data.map((user) => ({
+          if (response && response.data && response.data.users) {
+            const formattedData = response.data.users.map((user) => ({
               ...user,
               date: user.createdAt
                 ? new Intl.DateTimeFormat("en-GB", {
@@ -72,10 +74,13 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
                     year: "numeric",
                   }).format(new Date(user.createdAt))
                 : "N/A",
+              profileStatus: user.status || "Not completed", // Fallback if profileStatus doesn't exist
             }));
             fetchedUsers = [...fetchedUsers, ...formattedData];
-            totalFetchedUsers = response.total;
+            totalFetchedUsers = response.data.totalUsers;
             page++;
+          } else {
+            break;
           }
         } while (page <= Math.ceil(totalFetchedUsers / usersPerPage));
 
@@ -184,9 +189,6 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
               <th scope="col" className="px-6 py-3 whitespace-nowrap">
                 DATE
               </th>
-              <th scope="col" className="px-6 py-3">
-                Action
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -263,26 +265,6 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
                     onClick={() => onSelectUser(user)}
                   >
                     {user.date || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className=" -mr-4 -ml-2">
-                      <FontAwesomeIcon
-                        icon={faWhatsapp}
-                        className="self-stretch h-4 w-4 ho"
-                      />
-                      <FontAwesomeIcon
-                        icon={faEnvelope}
-                        className=" ml-2 self-stretch h-4 w-4"
-                      />
-                      <FontAwesomeIcon
-                        icon={faSms}
-                        className=" ml-2  self-stretch h-4 w-4"
-                      />
-                      <FontAwesomeIcon
-                        icon={faBell}
-                        className="ml-2 self-stretch h-4 w-4"
-                      />
-                    </div>
                   </td>
                 </tr>
               ))

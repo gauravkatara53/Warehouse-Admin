@@ -129,11 +129,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <div className="mt-10 relative">
       <div className="flex items-center rounded-lg text-gray-600">
-        <div className="flex items-center bg-white flex-none w-1/8 rounded-md p-2 mr-1">
+        <div className="flex items-center bg-white flex-none w-4/8 rounded-md p-2 mr-1">
           <input
             type="text"
             placeholder="Search"
-            className="border-none outline-none text-sm flex-1 h-10 w-36"
+            className="border-none outline-none text-md flex-1 h-10 w-[350px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -144,28 +144,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </div>
         <div className="flex items-center rounded-lg  w-full justify-between">
           <div className="flex items-center border border-gray-300 rounded-lg p-4 mr-2 w-full space-x-4 justify-between">
-            <div className=" -mr-4 -ml-2">
-              <FontAwesomeIcon
-                icon={faWhatsapp}
-                className="self-stretch h-4 w-4"
-              />
-              <FontAwesomeIcon
-                icon={faEnvelope}
-                className=" ml-4 self-stretch h-4 w-4"
-              />
-              <FontAwesomeIcon
-                icon={faSms}
-                className=" ml-4  self-stretch h-4 w-4"
-              />
-              <FontAwesomeIcon
-                icon={faBell}
-                className="ml-4 self-stretch h-4 w-4"
-              />
-            </div>
             <div className="flex items-center h-full">
               <FontAwesomeIcon
                 icon={faFilter}
-                className="mx-2 border-r border-l border-gray-300 px-3 self-stretch"
+                className="mr-2 border-r  border-gray-300 px-3 self-stretch"
               />
             </div>
 

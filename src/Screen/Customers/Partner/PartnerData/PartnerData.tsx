@@ -5,9 +5,7 @@ import Pagination from "../../../../Components/Common/Pagination/Pagination";
 import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
 import Message from "@/Components/Common/NotFoundPage/Message";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { faBell, faEnvelope, faSms } from "@fortawesome/free-solid-svg-icons";
+
 
 interface Partner {
   _id: string;
@@ -27,6 +25,16 @@ interface Partner {
   rentOrSell: string;
   numberOfBooking: string;
   price: { amount: number; title: string; discount: number }[];
+  status: string;
+  username: string;
+  password: string;
+  partnerDocId: string;
+  bookings: any[];
+  paymentMethods: any[];
+  updatedAt: string;
+  __v: number;
+  refreshToken: string;
+  kycDocId: string;
 }
 
 interface PartnerDataProps {
@@ -71,34 +79,48 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
       try {
         do {
           const response = await apiService.get<{
-            data: Partner[];
-            page: number;
-            pages: number;
-            pageSize: number;
-            total: number;
-          }>(
-            `/admin/partner/all-partners?page=${page}&pageSize=${usersPerPage}`
-          );
-          if (response && response.data) {
-            const formattedData = response.data.map((partner, index) => ({
-              ...partner,
-              kycStatus:
-                partner.kycStatus === "Pending"
-                  ? "processing"
-                  : partner.kycStatus === "Cancel"
-                  ? "rejected"
-                  : partner.kycStatus,
-              date: partner.createdAt
-                ? new Intl.DateTimeFormat("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  }).format(new Date(partner.createdAt))
-                : "N/A",
-              positionNumber: index + 1, // Assign a permanent position number here
-            }));
+            statusCode: number;
+            data: {
+              partners: Partner[];
+              totalPartners: number;
+              currentPage: number;
+              limit: number;
+              totalPages: number;
+            };
+            message: string;
+            success: boolean;
+            errors: null;
+            timestamp: string;
+          }>(`/partner/all-partner?page=${page}&pageSize=${usersPerPage}`);
+
+          if (response && response.data && response.data.partners) {
+            const formattedData = response.data.partners.map(
+              (partner, index) => ({
+                ...partner,
+                kycStatus:
+                  partner.kycStatus === "Pending"
+                    ? "processing"
+                    : partner.kycStatus === "Cancel"
+                    ? "rejected"
+                    : partner.kycStatus,
+                date: partner.createdAt
+                  ? new Intl.DateTimeFormat("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }).format(new Date(partner.createdAt))
+                  : "N/A",
+                positionNumber: index + 1,
+                membershipStatus: partner.status || "N/A",
+                address: "N/A", // Add default value for address
+                businessName: "N/A", // Add default value for businessName
+                rentOrSell: "N/A", // Add default value for rentOrSell
+                numberOfBooking: "0", // Add default value for numberOfBooking
+                price: [], // Add default value for price
+              })
+            );
             fetchedPartners = [...fetchedPartners, ...formattedData];
-            totalFetchedPartners = response.total;
+            totalFetchedPartners = response.data.totalPartners;
             page++;
           }
         } while (page <= Math.ceil(totalFetchedPartners / usersPerPage));
@@ -206,9 +228,6 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                 <th scope="col" className="px-6 py-3">
                   DATE
                 </th>
-                <th scope="col" className="px-6 py-3">
-                  Action
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -290,26 +309,6 @@ const PartnerData = ({ onSelectPartner }: PartnerDataProps) => {
                       onClick={() => onSelectPartner(partner)}
                     >
                       {partner.date || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className=" -mr-4 -ml-2">
-                        <FontAwesomeIcon
-                          icon={faWhatsapp}
-                          className="self-stretch h-4 w-4 ho"
-                        />
-                        <FontAwesomeIcon
-                          icon={faEnvelope}
-                          className=" ml-2 self-stretch h-4 w-4"
-                        />
-                        <FontAwesomeIcon
-                          icon={faSms}
-                          className=" ml-2  self-stretch h-4 w-4"
-                        />
-                        <FontAwesomeIcon
-                          icon={faBell}
-                          className="ml-2 self-stretch h-4 w-4"
-                        />
-                      </div>
                     </td>
                   </tr>
                 ))
