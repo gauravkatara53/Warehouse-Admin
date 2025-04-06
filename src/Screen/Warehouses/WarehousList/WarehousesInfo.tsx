@@ -47,10 +47,24 @@ interface Warehouse {
   totalPrice: number;
 }
 
+interface ApiResponse {
+  statusCode: number;
+  data: {
+    warehouses: Warehouse[];
+    totalWarehouses: number;
+    currentPage: number;
+    limit: number;
+    totalPages: number;
+  };
+  message: string;
+  success: boolean;
+  errors: null;
+  timestamp: string;
+}
+
 const WarehouseInfo: React.FC = () => {
   const navigate = useNavigate();
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -58,6 +72,7 @@ const WarehouseInfo: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const WAREHOUSES_PER_PAGE = 10;
 
   const fetchWarehouses = async () => {
@@ -65,16 +80,21 @@ const WarehouseInfo: React.FC = () => {
     setError(null);
 
     try {
-      const response = await apiService.get<{
-        success: boolean;
-        data: {
-          warehouses: Warehouse[];
-        };
-      }>("/warehouse/all/warehouse");
+      let url = `/warehouse/all/warehouse?page=${currentPage}&limit=${WAREHOUSES_PER_PAGE}`;
+
+      if (searchTerm) {
+        url += `&search=${searchTerm}`;
+      }
+
+      if (startDate && endDate) {
+        url += `&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+      }
+
+      const response = await apiService.get<ApiResponse>(url);
 
       if (response?.success) {
         setWarehouses(response.data.warehouses);
-        setFilteredWarehouses(response.data.warehouses); // Set the filtered list initially
+        setTotalPages(response.data.totalPages);
       } else {
         setError("Failed to fetch warehouses.");
       }
@@ -87,32 +107,7 @@ const WarehouseInfo: React.FC = () => {
 
   useEffect(() => {
     fetchWarehouses();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [searchTerm, startDate, endDate]);
-
-  const applyFilters = () => {
-    let filtered = [...warehouses];
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter((warehouse) =>
-        warehouse.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by date range
-    if (startDate && endDate) {
-      filtered = filtered.filter((warehouse) => {
-        const createdAtDate = new Date(warehouse.createdAt);
-        return createdAtDate >= startDate && createdAtDate <= endDate;
-      });
-    }
-
-    setFilteredWarehouses(filtered);
-  };
+  }, [currentPage, searchTerm, startDate, endDate]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -121,7 +116,7 @@ const WarehouseInfo: React.FC = () => {
 
   const handleApply = () => {
     if (startDate && endDate) {
-      applyFilters();
+      setCurrentPage(1);
       closeModal();
     } else {
       console.log("Please select both start and end dates.");
@@ -131,12 +126,6 @@ const WarehouseInfo: React.FC = () => {
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
-  // Pagination Logic
-  const startIndex = (currentPage - 1) * WAREHOUSES_PER_PAGE;
-  const currentPageWarehouses = filteredWarehouses.slice(
-    startIndex,
-    startIndex + WAREHOUSES_PER_PAGE
-  );
   const handlePartnerClick = (partnerId: string) => {
     if (partnerId) {
       navigate(`/warehouse-profile/${partnerId}`);
@@ -185,10 +174,10 @@ const WarehouseInfo: React.FC = () => {
           </div>
         ) : error ? (
           <Message message={error} />
-        ) : currentPageWarehouses.length === 0 ? (
+        ) : warehouses.length === 0 ? (
           <Message message="No Warehouse found." />
         ) : (
-          currentPageWarehouses.map((warehouse) => (
+          warehouses.map((warehouse) => (
             <div
               key={warehouse._id}
               onClick={() => handlePartnerClick(warehouse._id)}
@@ -240,7 +229,7 @@ const WarehouseInfo: React.FC = () => {
       </section>
 
       <Pagination
-        totalPages={Math.ceil(filteredWarehouses.length / WAREHOUSES_PER_PAGE)}
+        totalPages={totalPages}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />

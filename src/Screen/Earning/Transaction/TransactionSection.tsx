@@ -33,6 +33,21 @@ type Transaction = {
   updatedAt: string;
 };
 
+type ApiResponse = {
+  statusCode: number;
+  data: {
+    transactions: Transaction[];
+    currentPage: number;
+    limit: number;
+    totalPages: number;
+    totalTransactions: number;
+  };
+  message: string;
+  success: boolean;
+  errors: null;
+  timestamp: string;
+};
+
 type GroupedTransactionEntry = {
   dateLabel: string;
   transaction: Transaction;
@@ -45,6 +60,7 @@ const TransactionSectionAll = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
   const [modalOpen, setModalOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -54,16 +70,22 @@ const TransactionSectionAll = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await apiService.get<{ transactions: Transaction[] }>(
-          "/admin/all/transactions"
-        );
-        console.log("API Response:", response); // Log the response
+        let url = `/admin/all/transactions?page=${currentPage}&limit=${itemsPerPage}`;
+        if (searchTerm) {
+          url += `&search=${searchTerm}`;
+        }
+        if (startDate && endDate) {
+          url += `&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+        }
+
+        const response = await apiService.get<ApiResponse>(url);
+        console.log("API Response:", response);
         if (response?.data?.transactions) {
-          // Correctly access the transactions
           const sortedTransactions = flattenAndSortTransactions(
             response.data.transactions
-          ); // Access transactions from response.data
+          );
           setGroupedTransactions(sortedTransactions);
+          setTotalPages(response.data.totalPages);
           setError(null);
         } else {
           console.error("No transactions found in the response");
@@ -77,7 +99,7 @@ const TransactionSectionAll = () => {
       }
     };
     fetchTransactions();
-  }, []);
+  }, [currentPage, searchTerm, startDate, endDate]);
 
   const flattenAndSortTransactions = (
     transactions: Transaction[]
@@ -119,35 +141,23 @@ const TransactionSectionAll = () => {
       );
   };
 
-  // Filter transactions based on search term and date range
-  const filteredTransactions = groupedTransactions.filter((transaction) => {
-    const matchesSearchTerm =
-      transaction.transaction.createdBy.name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ?? false;
-
-    const paymentDate = new Date(transaction.transaction.transactionDate);
-    const isWithinDateRange =
-      (!startDate || paymentDate >= startDate) &&
-      (!endDate || paymentDate <= endDate);
-    return matchesSearchTerm && isWithinDateRange;
-  });
-
-  console.log("Filtered Transactions:", filteredTransactions);
-
   const handleDateSelection = () => {
     setModalOpen(true);
   };
 
   const handleApplyDateRange = () => {
     setModalOpen(false);
+    setCurrentPage(1); // Reset to first page when applying date range
   };
 
-  const paginatedTransactions = filteredTransactions.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   return (
     <div>
@@ -177,7 +187,7 @@ const TransactionSectionAll = () => {
             type="text"
             placeholder="Search with Customer Name"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
             className="w-3/5 p-2 border rounded-md shadow-md text-sm sm:text-base"
           />
         </div>
@@ -188,16 +198,16 @@ const TransactionSectionAll = () => {
           </div>
         ) : error ? (
           <Message message="Something went wrong" />
-        ) : filteredTransactions.length === 0 ? (
+        ) : groupedTransactions.length === 0 ? (
           <Message message="No transactions found" />
         ) : (
-          paginatedTransactions.map(({ dateLabel, transaction }, index) => (
+          groupedTransactions.map(({ dateLabel, transaction }, index) => (
             <div
               key={`${transaction._id}-${index}`}
               style={{ marginBottom: "1.5rem" }}
             >
               {(index === 0 ||
-                paginatedTransactions[index - 1].dateLabel !== dateLabel) && (
+                groupedTransactions[index - 1].dateLabel !== dateLabel) && (
                 <h3 className="text-sm text-gray-400 mb-2">{dateLabel}</h3>
               )}
               <TransactionItem tx={transaction} />
@@ -206,11 +216,11 @@ const TransactionSectionAll = () => {
         )}
       </section>
 
-      {filteredTransactions.length > 0 && (
+      {groupedTransactions.length > 0 && (
         <Pagination
           totalPages={totalPages}
           currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+          setCurrentPage={handlePageChange}
         />
       )}
 
@@ -250,7 +260,7 @@ const TransactionItem = ({ tx }: { tx: Transaction }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
-                d="M5 10l7-7m0 0l7 7m-7-7v18"
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
               />
             </svg>
           </div>

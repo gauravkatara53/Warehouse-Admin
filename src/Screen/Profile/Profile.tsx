@@ -44,6 +44,14 @@ interface LogoutResponse {
   timestamp: string;
 }
 
+interface AvatarUpdateResponse {
+  success: boolean;
+  data: {
+    avatar: string;
+  };
+  message: string;
+}
+
 export default function Profile() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +66,8 @@ export default function Profile() {
   const [newPincode, setNewPincode] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoadingAvtara, setIsLoadingAvtara] = useState(false);
   const navigate = useNavigate();
 
   const fetchProfileData = async () => {
@@ -199,6 +209,47 @@ export default function Profile() {
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedFile(file);
+      uploadAvatar(file);
+    }
+  };
+
+  const uploadAvatar = async (file: File) => {
+    setIsLoadingAvtara(true);
+    const formData = new FormData();
+    formData.append("avatar", file, file.name); // Add the file name as the third parameter
+
+    try {
+      const response = await apiService.patch<AvatarUpdateResponse>(
+        "/admin/update-avatar",
+        formData
+      );
+
+      if (response?.success) {
+        // Update the profile data with the new avatar URL
+        setProfileData((prevData) =>
+          prevData
+            ? {
+                ...prevData,
+                avatar: response.data.avatar,
+              }
+            : null
+        );
+        alert("Avatar updated successfully!");
+      } else {
+        setError("Failed to update avatar.");
+      }
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      setError("Something went wrong while updating the avatar.");
+    } finally {
+      setIsLoadingAvtara(false);
+    }
+  };
+
   return (
     <div className="flex flex-wrap lg:flex-nowrap overflow-hidden">
       <Sidebar />
@@ -236,35 +287,25 @@ export default function Profile() {
                       alt="Profile"
                       className="w-20 h-20 rounded-lg object-cover"
                     />
-                    <span
+                    <label
+                      htmlFor="fileInput"
                       className="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md cursor-pointer"
-                      onClick={() => {
-                        const fileInput = document.getElementById(
-                          "fileInput"
-                        ) as HTMLInputElement | null;
-                        if (fileInput) fileInput.click();
-                      }}
                     >
-                      <FontAwesomeIcon
-                        icon={faPencilAlt}
-                        className="text-gray-500"
-                      />
-                    </span>
-
+                      {isLoadingAvtara ? (
+                        <ClipLoader size={15} color={"#4FD1C5"} />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faPencilAlt}
+                          className="text-gray-500"
+                        />
+                      )}
+                    </label>
                     <input
                       id="fileInput"
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          console.log("Selected file:", file); // Debugging line
-                          handleUploadOrUpdate(file); // Call the upload function with the selected file
-                        } else {
-                          console.error("No file selected"); // Debugging line
-                        }
-                      }}
+                      onChange={handleFileChange}
                     />
                   </div>
 
