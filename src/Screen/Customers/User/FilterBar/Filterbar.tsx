@@ -6,20 +6,18 @@ import {
   faRedo,
   faChevronDown,
   faDownload,
-  faEnvelope,
-  faSms,
-  faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Calendar from "../../../../Components/Customers/Calendar";
 import DownloadingXL from "./DownloadingXL/DownloadingXL";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 interface FilterBarProps {
   selectedDate: string | null;
   setSelectedDate: (date: string | null) => void;
-  selectedKYCStatus: "completed" | "Not completed" | null;
-  setSelectedKYCStatus: (status: "completed" | "Not completed" | null) => void;
+  selectedKYCStatus: "premium" | "normal" | "extra premium" | null;
+  setSelectedKYCStatus: (
+    status: "premium" | "normal" | "extra premium" | null
+  ) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedOrderType: string | null; // Add selected order type
@@ -67,7 +65,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
     setShowCalendar(false);
   };
 
-  const handleKYCStatusSelect = (status: "completed" | "Not completed") => {
+  const handleKYCStatusSelect = (
+    status: "premium" | "normal" | "extra premium"
+  ) => {
     setSelectedKYCStatus(status);
     setShowKYCStatusDropdown(false);
   };
@@ -272,15 +272,21 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   <ul className="py-2">
                     <li
                       className="px-4 py-2 hover:bg-gray-200 cursor-pointer whitespace-nowrap"
-                      onClick={() => handleKYCStatusSelect("completed")}
+                      onClick={() => handleKYCStatusSelect("normal")}
                     >
-                      Completed
+                      Normal
                     </li>
                     <li
                       className="px-4 py-2 hover:bg-gray-200 cursor-pointer whitespace-nowrap"
-                      onClick={() => handleKYCStatusSelect("Not completed")}
+                      onClick={() => handleKYCStatusSelect("premium")}
                     >
-                      Not completed
+                      Premium
+                    </li>
+                    <li
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer whitespace-nowrap"
+                      onClick={() => handleKYCStatusSelect("extra premium")}
+                    >
+                      Extra Premium
                     </li>
                   </ul>
                 </div>

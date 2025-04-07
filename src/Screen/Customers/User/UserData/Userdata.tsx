@@ -5,9 +5,7 @@ import FilterBar from "../FilterBar/Filterbar";
 import apiService from "@/Components/APIService/apiService";
 import ClipLoader from "react-spinners/ClipLoader";
 import Message from "@/Components/Common/NotFoundPage/Message";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { faBell, faEnvelope, faSms } from "@fortawesome/free-solid-svg-icons";
+
 interface User {
   _id: string;
   name: string;
@@ -32,7 +30,7 @@ const UserData = ({ onSelectUser }: UserDataProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedKYCStatus, setSelectedKYCStatus] = useState<
-    "completed" | "Not completed" | null
+    "premium" | "normal" | "extra premium" | null
   >(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedOrderType, setSelectedOrderType] = useState<string | null>(
