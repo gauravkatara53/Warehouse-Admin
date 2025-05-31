@@ -6,14 +6,14 @@ import {
   faRedo,
   faChevronDown,
   faDownload,
-  faSms,
-  faBell,
-  faEnvelope,
+  // faSms,
+  // faBell,
+  // faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Calendar from "../../../../Components/Customers/Calendar"; // Import your custom Calendar component
 import DownloadingXL from "./DownloadingXL/DownloadingXL";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+// import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 interface FilterBarProps {
   selectedDate: string | null;

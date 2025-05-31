@@ -5,7 +5,7 @@ import {
   faDollarSign, // Replace with appropriate icon
   faCalendarCheck,
   faBuilding, // Replace with appropriate icon
-  faExclamationCircle,
+  // faExclamationCircle,
   faKey,
   faUserTag,
   faHandshake,
@@ -55,11 +55,11 @@ export const tabs: Tab[] = [
     icon: faKey,
     label: "Approve Admins",
   },
-  {
-    path: "/complaints",
-    icon: faExclamationCircle, // Replace with appropriate icon
-    label: "Complaints",
-  },
+  // {
+  //   path: "/complaints",
+  //   icon: faExclamationCircle, // Replace with appropriate icon
+  //   label: "Complaints",
+  // },
   {
     path: "/profile",
     icon: faUser,

@@ -3,7 +3,13 @@ import { ClipLoader } from "react-spinners";
 import apiService from "@/Components/APIService/apiService";
 import { format, isToday, isYesterday, startOfWeek, endOfWeek } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowDown,
+  faArrowUp,
+  faCalendarAlt,
+  faCircleXmark,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import Pagination from "@/Components/Common/Pagination/Pagination";
 import DateRangeModal from "../../../Components/Warehouse/DateRangeModal";
 import "react-datepicker/dist/react-datepicker.css";
@@ -11,26 +17,21 @@ import Message from "@/Components/Common/NotFoundPage/Message";
 
 type Transaction = {
   _id: string;
-  warehouseId: {
-    _id: string;
-    name: string;
-  };
-  orderId: {
-    _id: string;
-    orderStatus: string;
-  };
-  totalPrice: number;
+  type: "order" | "partnerPayment";
   transactionDate: string;
-  createdBy: {
-    _id: string;
-    name: string;
-  };
-  paymentStatus: string;
-  razorpayOrderId: string;
-  razorpayPaymentId: string | null;
-  razorpaySignature: string | null;
-  createdAt: string;
-  updatedAt: string;
+  orderId: string;
+  orderStatus: string | null;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  createdBy: string;
+  warehouseName:
+    | string
+    | {
+        _id: string;
+        name: string;
+      };
+  amount: number;
+  isdebited: boolean;
 };
 
 type ApiResponse = {
@@ -242,86 +243,65 @@ const TransactionItem = ({ tx }: { tx: Transaction }) => {
     new Date(tx.transactionDate),
     "dd MMM yyyy 'at' hh:mm a"
   );
-  const amount = tx.totalPrice ? tx.totalPrice.toFixed(2) : "0.00";
+  const amount = tx.amount ? tx.amount.toFixed(2) : "0.00";
 
-  function getStatusIcon(orderStatus: string): import("react").ReactNode {
-    switch (orderStatus) {
-      case "Completed":
-        return (
-          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-green-500 mr-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 14l-7 7m0 0l-7-7m7 7V3"
-              />
-            </svg>
-          </div>
-        );
-      case "Failed":
-        return (
-          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-red-500 mr-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-red-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
-        );
-      case "Pending":
-        return (
-          <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-yellow-500 mr-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-yellow-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4m0 4h.01m-6.938 4h13.856C18.602 21 20 19.656 20 18.01V5.99C20 4.344 18.602 3 16.928 3H7.072C5.398 3 4 4.344 4 5.99v12.02C4 19.656 5.398 21 7.072 21z"
-              />
-            </svg>
-          </div>
-        );
-      default:
-        return null;
+  const warehouseDisplay =
+    typeof tx.warehouseName === "string"
+      ? tx.warehouseName
+      : tx.warehouseName?.name;
+
+  const getStatusIcon = () => {
+    if (!tx.isdebited) {
+      switch (tx.paymentStatus) {
+        case "Completed":
+          return (
+            <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-green-500 mr-4">
+              <FontAwesomeIcon icon={faArrowDown} className="text-green-500" />
+            </div>
+          );
+        case "Failed":
+          return (
+            <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-red-500 mr-4">
+              <FontAwesomeIcon icon={faCircleXmark} className="text-red-500" />
+            </div>
+          );
+        case "Pending":
+          return (
+            <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-yellow-500 mr-4">
+              <FontAwesomeIcon icon={faSpinner} className="text-yellow-500" />
+            </div>
+          );
+        default:
+          return null;
+      }
     }
-  }
+    if (tx.isdebited) {
+      return (
+        <div className="w-8 h-8 flex justify-center items-center rounded-full border-2 border-blue-500 mr-4">
+          <FontAwesomeIcon icon={faArrowUp} className="text-green-500" />
+        </div>
+      );
+    }
+  };
+
   return (
     <div className="flex justify-between items-center -mx-3 p-4 pl-1 pr-1 rounded-lg mb-3 shadow-sm sm:-mx-0 sm:p-4 sm:pl-4 sm:pr-4">
       <div className="flex items-center">
-        {getStatusIcon(tx.orderId.orderStatus)}{" "}
-        {/* Use the getStatusIcon function here */}
+        {getStatusIcon()}
         <div>
-          <p className="font-medium text-sm sm:text-base">
-            {tx.createdBy.name}
+          <p className="font-medium text-sm sm:text-base">{tx.createdBy}</p>
+          <p className="text-xs sm:text-sm text-gray-400">
+            {warehouseDisplay} | {formattedDate}
           </p>
-          <p className="text-xs sm:text-sm text-gray-400">{formattedDate}</p>
         </div>
       </div>
 
-      <p className="text-green-500 font-medium text-sm sm:text-base">
-        ₹{amount}
+      <p
+        className={`font-medium text-sm sm:text-base ${
+          tx.isdebited ? "text-red-500" : "text-green-500"
+        }`}
+      >
+        {tx.isdebited ? `- ₹${amount}` : `+ ₹${amount}`}
       </p>
     </div>
   );

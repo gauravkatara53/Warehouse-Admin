@@ -20,6 +20,7 @@ interface User {
   createdAt: string;
   username: string;
   avatar: string;
+  status: string;
 }
 
 interface UserDataProps {

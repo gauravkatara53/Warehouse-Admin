@@ -47,7 +47,7 @@ const ProfileAboveSec: React.FC<ProfileAboveSecProps> = ({
       setLoading(true);
       // Replace axios call with apiService
       const response = await apiService.get<{ data: Partner }>(
-        `/admin/partner/${partner._id}`
+        `/partner/admin/partner/profile/${partner._id}`
       );
       if (response) {
         setDetailedData(response.data);
