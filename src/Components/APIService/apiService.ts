@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 // Define the base API instance
 const api = axios.create({
   baseURL: "https://bmw-backend-l85a.onrender.com/api/v1", // API base URL
+  // baseURL: "http://localhost:5000/api/v1", // Local development URL
   headers: {
     "Content-Type": "application/json",
   },
