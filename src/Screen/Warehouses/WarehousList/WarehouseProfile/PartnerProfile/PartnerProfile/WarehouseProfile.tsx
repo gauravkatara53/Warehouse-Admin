@@ -89,7 +89,8 @@ export default function WarehouseProfileMain({}: {}) {
           {warehouse && warehouseId && (
             <>
               <ProfileAboveSec warehouse={warehouse} />
-              <RecentListings warehouseId={warehouseId} />{" "}
+              <RecentListings warehouseId={warehouseId} />
+
               {/* Pass partnerId instead of partner */}
             </>
           )}

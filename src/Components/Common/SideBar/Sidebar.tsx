@@ -98,10 +98,10 @@ export default function Sidebar() {
         </div>
 
         {/* Help Section */}
-        <div className="relative flex justify-center items-center -mt-12 mb-0">
+        <div className="relative flex justify-center items-center -mt-6 mb-0">
           <div className="p-2 max-w-sm w-full">
             <div
-              className="rounded-lg bg-cover bg-center p-2 text-left py-4"
+              className="rounded-lg bg-cover bg-center p-2 text-left py-8"
               style={{
                 backgroundImage: `url('/Background-s.png')`,
               }}

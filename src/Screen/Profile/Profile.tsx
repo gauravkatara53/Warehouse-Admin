@@ -66,7 +66,7 @@ export default function Profile() {
   const [newPincode, setNewPincode] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [_selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoadingAvtara, setIsLoadingAvtara] = useState(false);
   const navigate = useNavigate();
 
@@ -89,40 +89,40 @@ export default function Profile() {
     }
   };
 
-  const handleUploadOrUpdate = async (file: File | null) => {
-    if (!file) {
-      console.error("No file selected");
-      return; // Exit if no file is selected
-    }
+  // const handleUploadOrUpdate = async (file: File | null) => {
+  //   if (!file) {
+  //     console.error("No file selected");
+  //     return; // Exit if no file is selected
+  //   }
 
-    const formData = new FormData();
-    formData.append("avatar", file); // Append the file to the FormData object
+  //   const formData = new FormData();
+  //   formData.append("avatar", file); // Append the file to the FormData object
 
-    try {
-      const response = await apiService.patch<ApiResponse>(
-        "/admin/update-avatar",
-        formData // Axios will handle the Content-Type for FormData
-      );
+  //   try {
+  //     const response = await apiService.patch<ApiResponse>(
+  //       "/admin/update-avatar",
+  //       formData // Axios will handle the Content-Type for FormData
+  //     );
 
-      if (response?.success) {
-        // Update the profile data with the new avatar URL
-        setProfileData((prevData) =>
-          prevData
-            ? {
-                ...prevData,
-                avatar: response.data.avatar, // Update the avatar
-              }
-            : null
-        );
-        alert(response.message); // Show success message
-      } else {
-        setError("Failed to update avatar.");
-      }
-    } catch (error) {
-      console.error("Error updating avatar:", error); // Log the error for debugging
-      setError("Something went wrong while updating the avatar.");
-    }
-  };
+  //     if (response?.success) {
+  //       // Update the profile data with the new avatar URL
+  //       setProfileData((prevData) =>
+  //         prevData
+  //           ? {
+  //               ...prevData,
+  //               avatar: response.data.avatar, // Update the avatar
+  //             }
+  //           : null
+  //       );
+  //       alert(response.message); // Show success message
+  //     } else {
+  //       setError("Failed to update avatar.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating avatar:", error); // Log the error for debugging
+  //     setError("Something went wrong while updating the avatar.");
+  //   }
+  // };
 
   const handleEditInfo = async () => {
     setActionLoading(true);

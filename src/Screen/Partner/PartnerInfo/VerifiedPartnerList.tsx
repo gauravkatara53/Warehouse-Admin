@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
@@ -27,7 +27,7 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
   setCurrentPage,
   setTotalPages,
 }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,13 +75,13 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
     setCurrentPage(1); // Reset to first page on search term change
   };
 
-  const handlePartnerClick = (partnerId: string) => {
-    if (partnerId) {
-      navigate(`/partner-profile/${partnerId}`);
-    } else {
-      alert("Partner document ID is missing.");
-    }
-  };
+  // const handlePartnerClick = (partnerId: string) => {
+  //   if (partnerId) {
+  //     navigate(`/partner-profile/${partnerId}`);
+  //   } else {
+  //     alert("Partner document ID is missing.");
+  //   }
+  // };
 
   const Spinner = () => (
     <div className="flex justify-center items-center mt-4">
@@ -113,7 +113,7 @@ const VerifiedPartnerList: React.FC<VerifiedPartnerListProps> = ({
             <div
               key={partner._id}
               className="rounded-lg p-4 mb-4 border border-gray-200 hover:cursor-pointer"
-              onClick={() => handlePartnerClick(partner._id)}
+              // onClick={() => handlePartnerClick(partner._id)}
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div className="flex items-start">

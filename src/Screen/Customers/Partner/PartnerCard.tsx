@@ -14,7 +14,7 @@ interface PartnerStatsResponse {
   success: boolean;
   data: {
     totalPartners: number;
-    activePartners: number;
+    activePartner: number; // Corrected to match API response
     membershipNotPaid: number;
     kycNotUploaded: number;
   };
@@ -23,7 +23,7 @@ interface PartnerStatsResponse {
 const PartnerCard = () => {
   const [partnerStats, setPartnerStats] = useState({
     totalPartners: 0,
-    activePartners: 0,
+    activePartner: 0,
     membershipNotPaid: 0,
     kycNotUploaded: 0,
   });
@@ -32,11 +32,11 @@ const PartnerCard = () => {
   useEffect(() => {
     const fetchPartnerStats = async () => {
       const data = await apiService.get<PartnerStatsResponse>(
-        "admin/partner-card/statistics-card"
+        "admin/get/partner/customer/data"
       );
       if (data && data.success) {
         setPartnerStats(data.data);
-        setDataFetched(true); // Trigger animation after data fetch
+        setDataFetched(true);
       }
     };
 
@@ -46,8 +46,8 @@ const PartnerCard = () => {
   const AnimatedNumber = ({ target }: { target: number }) => {
     const { number } = useSpring({
       from: { number: 0 },
-      to: { number: dataFetched ? target : 0 }, // Start from 0 to target
-      config: { duration: 500 }, // Adjust the duration for speed
+      to: { number: dataFetched ? target : 0 },
+      config: { duration: 500 },
     });
 
     return <animated.span>{number.to((n) => n.toFixed(0))}</animated.span>;
@@ -64,12 +64,12 @@ const PartnerCard = () => {
         />
         <CardWrapper1
           heading="Active Partner"
-          mainNumber={<AnimatedNumber target={partnerStats.activePartners} />}
+          mainNumber={<AnimatedNumber target={partnerStats.activePartner} />}
           className="sm:mb-0 -mb-3"
           icon={<FontAwesomeIcon icon={faGlobe} />}
         />
         <CardWrapper1
-          heading="Membership Not paid"
+          heading="Membership Not Paid"
           mainNumber={
             <AnimatedNumber target={partnerStats.membershipNotPaid} />
           }

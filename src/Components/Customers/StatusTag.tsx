@@ -7,7 +7,10 @@ interface StatusTagProps {
     | "processing"
     | "rejected"
     | "Not completed"
-    | "Not Found";
+    | "Not Found"
+    | "normal"
+    | "extra premium"
+    | "premium";
   className?: string;
 }
 
@@ -33,6 +36,20 @@ const StatusTag: React.FC<StatusTagProps> = ({ status, className }) => {
     case "Not Found":
       bgColor = "#FFFFFF";
       textColor = "#EF3826";
+      break;
+    case "normal":
+      bgColor = "#FFFFFF"; // Pure white background
+      textColor = "#EF3826"; // Bright red – normal tier
+      break;
+
+    case "premium":
+      bgColor = "#F5F5F5"; // Light gray for subtle elegance
+      textColor = "#C0A145"; // Soft gold – professional gold tone
+      break;
+
+    case "extra premium":
+      bgColor = "#FFF7D1"; // Light elegant gold background
+      textColor = "#D4AF37"; // Rich gold – royalty vibe
       break;
     default:
       bgColor = "#FFFFFF";

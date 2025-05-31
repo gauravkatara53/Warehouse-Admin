@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import KYCVerificationPopup from "./KYCVerificationPopup";
 import { ClipLoader } from "react-spinners";
 import Message from "@/Components/Common/NotFoundPage/Message";
@@ -26,7 +26,7 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
   setCurrentPage,
   setTotalPages,
 }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [allPartners, setAllPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,13 +73,13 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
     setCurrentPage(1); // Reset to first page on search term change
   };
 
-  const handlePartnerClick = (partnerId: string) => {
-    if (partnerId) {
-      navigate(`/partner-profile/${partnerId}`);
-    } else {
-      alert("Partner document ID is missing.");
-    }
-  };
+  // const handlePartnerClick = (partnerId: string) => {
+  //   if (partnerId) {
+  //     navigate(`/partner-profile/${partnerId}`);
+  //   } else {
+  //     alert("Partner document ID is missing.");
+  //   }
+  // };
 
   const Spinner = () => (
     <div className="flex justify-center items-center mt-4">
@@ -125,7 +125,7 @@ const KYCVerificationList: React.FC<KYCVerificationListProps> = ({
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div
                   className="flex items-start"
-                  onClick={() => handlePartnerClick(partner._id)}
+                  // onClick={() => handlePartnerClick(partner._id)}
                 >
                   <img
                     src={partner.avatar || "userde.jpg"}
