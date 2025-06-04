@@ -499,7 +499,7 @@ const RecentListings: React.FC<ProfileListingProps> = ({ partner }) => {
                 </h2>
                 <p>Order ID: {selectedPayment.orderId}</p>
                 <p>Month: {selectedPayment.month}</p>
-                <p>_ID: {selectedPayment._id} </p>
+
                 <div className="mt-4 space-y-4">
                   {/* Bank Details Section */}
                   <div className="mt-6 border rounded p-4 bg-gray-50">

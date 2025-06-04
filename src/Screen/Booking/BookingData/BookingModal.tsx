@@ -98,21 +98,37 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
               <h3 className="font-semibold mb-2 text-gray-600">
                 Booking Details
               </h3>
-
-              <div className="grid grid-cols-2 gap-2 text-gray-600">
-                <span>Booking Start On</span>
-                <span className="text-right">
-                  {formatDate(booking?.startDate)}
-                </span>
-                <span>Booking End On</span>
-                <span className="text-right">
-                  {formatDate(booking?.endDate)}
-                </span>
-                <span>Duration</span>
-                <span className="text-right">
-                  {booking?.duration || "Duration Not Available"} Months
-                </span>
-              </div>
+              {booking?.WarehouseDetail?.rentOrSell == "Rent" ? (
+                <div className="grid grid-cols-2 gap-2 text-gray-600">
+                  <span>Booking Start On</span>
+                  <span className="text-right">
+                    {formatDate(booking?.startDate)}
+                  </span>
+                  <span>Booking End On</span>
+                  <span className="text-right">
+                    {formatDate(booking?.endDate)}
+                  </span>
+                  <span>Duration</span>
+                  <span className="text-right">
+                    {booking?.duration || "Duration Not Available"} Months
+                  </span>
+                  <span>Rent/Sell</span>
+                  <span className="text-right px-3 py-0 rounded border bg-blue-100 text-blue-700 border-blue-300 ml-32">
+                    Rent
+                  </span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 text-gray-600">
+                  <span>Booking Date </span>
+                  <span className="text-right">
+                    {formatDate(booking?.startDate)}
+                  </span>
+                  <span>Rent/ Sell</span>
+                  <span className="text-right px-3 py-0 rounded border bg-blue-100 text-blue-700 border-blue-300 ml-32">
+                    Sold
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4 text-gray-600 bg-gray-100 p-3 rounded-xl">
@@ -133,6 +149,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ booking, onClose }) => {
                 </span>
                 <button className="text-[#47A374]">Call Customer</button>
               </div>
+            </div>
+            <div className="bg-gray-100 mb-4 p-3 rounded-xl">
+              <h3 className="font-semibold mb-2 text-gray-600">
+                Partner Details
+              </h3>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4 text-gray-600 bg-gray-100 p-3 rounded-xl">

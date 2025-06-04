@@ -76,7 +76,7 @@ const ProfileAboveSec: React.FC<ProfileAboveSecProps> = ({
       ) : (
         detailedData && (
           <div className="p-2 w-full max-w-4xl mx-auto flex flex-col sm:flex-row items-stretch gap-6">
-            <div className="flex-shrink-0 flex items-stretch">
+            <div className="flex-shrink-0 flex items-stretch -ml-24">
               <img
                 src={
                   detailedData.avatar ||
